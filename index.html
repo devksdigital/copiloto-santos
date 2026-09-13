@@ -10,7 +10,10 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>Copiloto RJ → Santos</title>
 <link rel="stylesheet" href="leaflet.css">
+<link rel="stylesheet" href="maplibre-gl.css">
 <script src="leaflet.js"></script>
+<script src="maplibre-gl.js"></script>
+<script src="leaflet-maplibre-gl.js"></script>
 <script src="dados.js"></script>
 <script src="voz.js"></script>
 <style>
@@ -52,6 +55,8 @@
   .leaflet-popup-content-wrapper{background:#151B16; color:#EAF2EB; border-radius:10px; border:1px solid #243026}
   .leaflet-popup-content{margin:10px 13px; font-size:.85rem; line-height:1.4}
   .leaflet-popup-tip{background:#151B16}
+  .osm-escuro{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9)}
+  .leaflet-gl-layer{z-index:1}
   .pino{filter:drop-shadow(0 1px 2px rgba(0,0,0,.7))}
   .pino.passado{opacity:.35}
   .mctrl{position:absolute; right:8px; top:8px; display:flex; flex-direction:column; gap:6px; z-index:800}
@@ -274,15 +279,21 @@ function distAte(p){
   return ultima ? hav(ultima.lat,ultima.lon,p.lat,p.lon) : null;
 }
 
-/* ---------- MAPA (Leaflet local + CARTO dark; blocos >14 são ampliados, então o mapa baixado vale em qualquer zoom) ---------- */
-let map=null;
-const TILE_URL='https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+/* ---------- MAPA: Leaflet (rota e ícones) sobre fundo vetorial OpenFreeMap (sem chave, pode baixar p/ offline) ---------- */
+let map=null, fundoVetorial=false;
+const ESTILO='https://tiles.openfreemap.org/styles/dark';
+function temWebGL(){ try{ const c=document.createElement('canvas'); return !!(c.getContext('webgl2')||c.getContext('webgl')); }catch(e){ return false; } }
 try{
-  map=L.map('map',{zoomControl:false});
-  L.tileLayer(TILE_URL,{
-    maxZoom:17, maxNativeZoom:14, minZoom:6, subdomains:'abcd', crossOrigin:true,
-    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>'
-  }).addTo(map);
+  map=L.map('map',{zoomControl:false, maxZoom:17, minZoom:5});
+  try{
+    if(!window.maplibregl || !L.maplibreGL || !temWebGL()) throw new Error('sem WebGL');
+    L.maplibreGL({style:ESTILO, attribution:'&copy; <a href="https://openfreemap.org">OpenFreeMap</a> &copy; <a href="https://www.openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'}).addTo(map);
+    fundoVetorial=true;
+  }catch(e){
+    /* aparelho sem WebGL: ruas do OpenStreetMap só com internet (sem download em massa, pela regra de uso deles) */
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:17, className:'osm-escuro',
+      attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
+  }
   map.on('dragstart',()=>{segue=false; $('follow').classList.remove('on');});
   map.getContainer().addEventListener('touchstart',e=>{
     if(e.touches.length>1){ segue=false; $('follow').classList.remove('on'); }
@@ -735,59 +746,78 @@ async function atualizaAvisos(){
   }
 }
 
-/* ---------- SEM INTERNET: conferência do cache e download dos blocos do mapa ao longo das 4 linhas ---------- */
-function blocosDaRota(){
-  const r2=(window.devicePixelRatio||1)>1?'@2x':'';
+/* ---------- SEM INTERNET: conferência do cache e download do mapa vetorial ao longo das 4 linhas ---------- */
+const MAPA_CACHE='copiloto-santos-mapa-v2';
+function tilesDoCorredor(){
   const set=new Set();
   const lon2x=(lon,z)=>Math.floor((lon+180)/360*2**z);
   const lat2y=(lat,z)=>{ const s=Math.sin(lat*Math.PI/180); return Math.floor((0.5-Math.log((1+s)/(1-s))/(4*Math.PI))*2**z); };
-  for(const z of [8,9,10,11,12,13,14]){
-    const raio = z>=13 ? 1 : 0;
+  for(let z=5; z<=14; z++){
+    const raio = (z===12 || z===13) ? 1 : 0;
     for(const v of VARS){ const R=DADOS[v].R;
-      for(let i=0;i<R.length;i++){
-        const x=lon2x(R[i][1],z), y=lat2y(R[i][0],z);
-        for(let dx=-raio;dx<=raio;dx++) for(let dy=-raio;dy<=raio;dy++) set.add(z+'/'+(x+dx)+'/'+(y+dy));
-      }
-    }
+      for(let i=0;i<R.length;i++){ const x=lon2x(R[i][1],z), y=lat2y(R[i][0],z);
+        for(let dx=-raio;dx<=raio;dx++) for(let dy=-raio;dy<=raio;dy++) set.add(z+'/'+(x+dx)+'/'+(y+dy)); } }
   }
-  return [...set].map(k=>{ const [z,x,y]=k.split('/'); return 'https://a.basemaps.cartocdn.com/dark_all/'+z+'/'+x+'/'+y+r2+'.png'; });
+  return [...set].map(k=>k.split('/').map(Number));
+}
+async function listaMapa(){
+  const st=await (await fetch(ESTILO)).json();
+  const urls=[ESTILO];
+  const corr=tilesDoCorredor();
+  for(const s of Object.values(st.sources||{})){
+    let tpl=null, minz=0, maxz=14;
+    if(s.url){ urls.push(s.url); const tj=await (await fetch(s.url)).json(); tpl=tj.tiles&&tj.tiles[0]; minz=tj.minzoom||0; maxz=(tj.maxzoom!=null?tj.maxzoom:14); }
+    else if(s.tiles){ tpl=s.tiles[0]; minz=s.minzoom||0; maxz=(s.maxzoom!=null?s.maxzoom:14); }
+    if(!tpl) continue;
+    corr.forEach(([z,x,y])=>{ if(z>=minz && z<=Math.min(maxz,14)) urls.push(tpl.replace('{z}',z).replace('{x}',x).replace('{y}',y)); });
+  }
+  const sprites = Array.isArray(st.sprite) ? st.sprite.map(s=>s.url) : (st.sprite?[st.sprite]:[]);
+  sprites.forEach(b=>['.json','.png','@2x.json','@2x.png'].forEach(ext=>urls.push(b+ext)));
+  if(st.glyphs){
+    const fontes=new Set(); (st.layers||[]).forEach(l=>{ const f=l.layout&&l.layout['text-font']; if(Array.isArray(f)) fontes.add(f.join(',')); });
+    fontes.forEach(f=>['0-255','256-511','8192-8447'].forEach(r=>urls.push(st.glyphs.replace('{fontstack}', f.split(',').map(encodeURIComponent).join(',')).replace('{range}',r))));
+  }
+  return [...new Set(urls)];
 }
 async function confereOffline(){
   try{
     if(!('caches' in window)){ $('offApp').textContent='navegador sem cache'; return; }
     const ks=await caches.keys();
-    const app=ks.find(k=>/^copiloto-santos-v/.test(k));
+    const app=ks.find(k=>/^copiloto-santos-v-/.test(k));
     if(!app){ $('offApp').textContent= location.protocol==='https:'||location.hostname==='localhost' ? 'salvando…' : 'só no link oficial'; }
     else{
-      const c=await caches.open(app); const n=(await c.keys()).length;
-      const esperado=(typeof VOZ_LISTA!=='undefined'? VOZ_LISTA.length:0)+9;
+      const n=(await (await caches.open(app)).keys()).length;
+      const esperado=(typeof PRE_TOTAL!=='undefined'? PRE_TOTAL : 0);
       $('offApp').textContent = n>=esperado ? '✓ pronto' : ('salvando '+n+'/'+esperado);
     }
-    const tl=ks.find(k=>/^copiloto-santos-tiles/.test(k));
-    const total=blocosDaRota().length;
-    if(tl){ const n=(await (await caches.open(tl)).keys()).length; $('offMapa').textContent= n>=total*0.97 ? '✓ '+n+' blocos' : n+' de '+total+' blocos';
-      $('offBarra').style.width=Math.min(100,Math.round(n/total*100))+'%'; }
-    else $('offMapa').textContent='não baixado ('+total+' blocos)';
+    let esperadoMapa=0; try{ esperadoMapa=+(localStorage.getItem('copSantosMapaTotal')||0); }catch(e){}
+    const mc=ks.includes(MAPA_CACHE)? (await (await caches.open(MAPA_CACHE)).keys()).length : 0;
+    if(!fundoVetorial){ $('offMapa').textContent='sem WebGL: mapa só online'; }
+    else if(!esperadoMapa || baixando){ if(!baixando) $('offMapa').textContent = 'não baixado'; }
+    else { const ok=mc>=esperadoMapa; $('offMapa').textContent = ok ? '✓ baixado' : 'incompleto ('+mc+' de '+esperadoMapa+')';
+      $('offBarra').style.width=Math.min(100,Math.round(mc/esperadoMapa*100))+'%'; if(ok) $('btnMapa').textContent='✓ Mapa da rota baixado'; }
   }catch(e){}
 }
 let baixando=false;
 $('btnMapa').onclick=async()=>{
   if(baixando) return;
+  if(!fundoVetorial){ $('offMapa').textContent='este aparelho não tem WebGL: mapa só online'; return; }
   if(!navigator.onLine){ $('offMapa').textContent='sem internet agora'; return; }
-  baixando=true; $('btnMapa').textContent='Baixando…';
-  const urls=blocosDaRota(); let feitos=0, falhas=0;
-  const c=await caches.open('copiloto-santos-tiles-v1');
-  const chave=u=>'https://tiles.copiloto/'+new URL(u).pathname.replace(/^\/+/,'');
-  let i=0;
+  baixando=true; $('btnMapa').textContent='Preparando…';
+  let urls;
+  try{ urls=await listaMapa(); }
+  catch(e){ baixando=false; $('btnMapa').textContent='⬇️ Tentar de novo'; $('offMapa').textContent='não consegui ler o mapa agora'; return; }
+  try{ localStorage.setItem('copSantosMapaTotal', String(urls.length)); }catch(e){}
+  const c=await caches.open(MAPA_CACHE); let feitos=0, falhas=0, i=0;
+  $('btnMapa').textContent='Baixando…';
   async function trabalhador(){
     while(i<urls.length){
       const u=urls[i++];
       try{
-        if(await c.match(chave(u))){ feitos++; continue; }
-        const r=await fetch(u,{mode:'cors'});
-        if(r.ok){ await c.put(chave(u), r); feitos++; } else falhas++;
+        if(await c.match(u,{ignoreVary:true})) feitos++;
+        else { const r=await fetch(u,{mode:'cors'}); if(r.ok){ if(!(await c.match(u,{ignoreVary:true}))) await c.put(u, r); feitos++; } else falhas++; }
       }catch(e){ falhas++; }
-      if((feitos+falhas)%25===0){ $('offMapa').textContent=feitos+' de '+urls.length+' blocos'; $('offBarra').style.width=Math.round((feitos+falhas)/urls.length*100)+'%'; }
+      if((feitos+falhas)%20===0){ $('offMapa').textContent=feitos+' de '+urls.length; $('offBarra').style.width=Math.round((feitos+falhas)/urls.length*100)+'%'; }
     }
   }
   await Promise.all([1,2,3,4,5,6].map(trabalhador));
