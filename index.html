@@ -5,10 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0B0F0C">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Copiloto">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<title>Copiloto RJ → Santos</title>
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Copiloto RJ ⇄ Santos</title>
 <link rel="stylesheet" href="leaflet.css">
 <link rel="stylesheet" href="maplibre-gl.css">
 <script src="leaflet.js"></script>
@@ -26,31 +29,28 @@
   html,body{margin:0; background:var(--bg); color:var(--ink);
     font-family:"Segoe UI",Roboto,system-ui,-apple-system,sans-serif;
     font-variant-numeric:tabular-nums; overscroll-behavior:none}
-  .wrap{max-width:560px; margin:0 auto; padding:10px 12px 28px;
-    padding-top:calc(10px + env(safe-area-inset-top)); padding-bottom:calc(28px + env(safe-area-inset-bottom));
-    display:flex; flex-direction:column; gap:10px}
-
+  .wrap{max-width:560px; margin:0 auto; padding:8px 10px 28px;
+    padding-top:calc(8px + env(safe-area-inset-top)); padding-bottom:calc(28px + env(safe-area-inset-bottom));
+    display:flex; flex-direction:column; gap:8px}
   header{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:2px 2px 0; min-height:22px}
-  header h1{font-size:.8rem; letter-spacing:.12em; text-transform:uppercase; color:var(--dim); margin:0; font-weight:600; white-space:nowrap}
+  header h1{font-size:.78rem; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); margin:0; font-weight:600; white-space:nowrap}
   .gps{display:flex; align-items:center; gap:7px; min-width:0}
-  #gstat{font-size:.72rem; color:var(--dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:52vw}
+  #gstat{font-size:.72rem; color:var(--dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:48vw}
   .gpsdot{width:9px; height:9px; border-radius:50%; background:#5A6B5D; flex:none}
   .gpsdot.on{background:var(--toll); box-shadow:0 0 0 4px rgba(61,214,140,.16)}
   .gpsdot.err{background:var(--cop)}
-
+  .gpsdot.meio{background:var(--ff)}
   .ic{display:inline-flex; width:26px; height:26px; flex:none; align-items:center; justify-content:center}
   .ic svg{width:26px; height:26px; display:block}
-
-  .avisos{background:#1C1426; border:1px solid #3A2A4F; border-radius:12px; padding:10px 13px; font-size:.84rem; line-height:1.45}
-  .avisos .quando{font-size:.66rem; letter-spacing:.1em; text-transform:uppercase; color:#A58BC4; margin-bottom:2px}
-  .avisos p{margin:6px 0 0; display:grid; grid-template-columns:22px 1fr; gap:6px; align-items:start}
-  .avisos p span.b{font-size:1rem; line-height:1.3}
-  .banner{background:#3A1410; border:1px solid #7A2A20; color:#FFD3CC; border-radius:12px; padding:10px 13px; font-size:.86rem; cursor:pointer}
-
+  .banner{border-radius:12px; padding:10px 13px; font-size:.86rem; line-height:1.4; cursor:pointer; border:1px solid}
+  .banner.verm{background:#3A1410; border-color:#7A2A20; color:#FFD3CC}
+  .banner.verde{background:#10321F; border-color:#1F6B3F; color:#CFF5DD}
+  .banner.amar{background:var(--ffbg); border-color:#4A3A12; color:#F5D28A}
+  .banner b{color:#fff}
   .mapbox{position:relative; border:1px solid var(--line); border-radius:16px; overflow:hidden; background:#111}
-  #map{height:46vh; background:#161B1D}
-  .leaflet-container{font:inherit}
-  .leaflet-control-attribution{background:rgba(11,15,12,.7)!important; color:#6b7a6e!important; font-size:.6rem!important}
+  #map{height:min(44vh, calc(100svh - 390px)); min-height:220px; background:#161B1D}
+  .leaflet-container{font:inherit; background:#161B1D}
+  .leaflet-control-attribution{background:rgba(11,15,12,.7)!important; color:#6b7a6e!important; font-size:.58rem!important}
   .leaflet-control-attribution a{color:#8FA394!important}
   .leaflet-popup-content-wrapper{background:#151B16; color:#EAF2EB; border-radius:10px; border:1px solid #243026}
   .leaflet-popup-content{margin:10px 13px; font-size:.85rem; line-height:1.4}
@@ -58,7 +58,6 @@
   .osm-escuro{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9)}
   .leaflet-gl-layer{z-index:1}
   .pino{filter:drop-shadow(0 1px 2px rgba(0,0,0,.7))}
-  .pino.passado{opacity:.35}
   .mctrl{position:absolute; right:8px; top:8px; display:flex; flex-direction:column; gap:6px; z-index:800}
   .mctrl button{width:42px; height:42px; border-radius:10px; border:1px solid var(--line);
     background:rgba(21,27,22,.94); color:var(--ink); font-size:1.15rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0}
@@ -67,62 +66,62 @@
     border-radius:10px; padding:6px 11px; font-size:1.05rem; font-weight:800; text-align:center; min-width:58px}
   .vel small{font-size:.62rem; font-weight:600; color:var(--dim); display:block; letter-spacing:.1em}
   .carro{filter:drop-shadow(0 1px 3px rgba(0,0,0,.6))}
-
-  .legenda{display:grid; grid-template-columns:repeat(3,1fr); gap:6px 8px; padding:8px 10px; background:rgba(11,15,12,.92);
-    border-top:1px solid var(--line); font-size:.7rem; color:var(--dim)}
+  .legenda{display:grid; grid-template-columns:repeat(3,1fr); gap:6px 8px; padding:7px 10px; background:rgba(11,15,12,.92);
+    border-top:1px solid var(--line); font-size:.68rem; color:var(--dim)}
   .legenda span{display:flex; align-items:center; gap:6px; white-space:nowrap}
-  .legenda .ic, .legenda .ic svg{width:20px; height:20px}
-
-  .big{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:14px 16px 13px 18px; position:relative; overflow:hidden}
+  .legenda .ic, .legenda .ic svg{width:18px; height:18px}
+  .big{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:12px 16px 12px 18px; position:relative; overflow:hidden}
   .big::before{content:""; position:absolute; left:0; top:0; bottom:0; width:5px; background:var(--mark)}
   .big.k-toll::before{background:var(--toll)} .big.k-ff::before{background:var(--ff)}
   .big.k-fuel::before{background:var(--fuel)} .big.k-cop::before{background:var(--cop)} .big.k-warn::before{background:var(--warn)}
-  .kicker{display:flex; align-items:center; gap:8px; font-size:.68rem; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); margin:0 0 8px}
+  .kicker{display:flex; align-items:center; gap:8px; font-size:.66rem; letter-spacing:.13em; text-transform:uppercase; color:var(--dim); margin:0 0 7px}
   .kicker .ic, .kicker .ic svg{width:22px; height:22px}
-  .name{font-size:1.22rem; line-height:1.2; font-weight:700; margin:0; text-wrap:balance}
-  .dist{display:flex; align-items:baseline; gap:8px; margin:10px 0 0}
-  .dist .n{font-size:2.7rem; line-height:1; font-weight:800; letter-spacing:-.02em}
+  .name{font-size:1.18rem; line-height:1.2; font-weight:700; margin:0; text-wrap:balance}
+  .dist{display:flex; align-items:baseline; gap:8px; margin:8px 0 0}
+  .dist .n{font-size:2.5rem; line-height:1; font-weight:800; letter-spacing:-.02em}
   .dist .u{font-size:1rem; color:var(--dim); font-weight:600}
-  .det{font-size:.88rem; color:var(--dim); margin:9px 0 0; line-height:1.45}
-
+  .det{font-size:.86rem; color:var(--dim); margin:8px 0 0; line-height:1.45}
   .row{display:grid; grid-auto-flow:column; grid-auto-columns:1fr; gap:8px}
   .row button{background:var(--panel); color:var(--ink); border:1px solid var(--line);
-    border-radius:12px; padding:12px 8px; font-size:.86rem; font-weight:650; font-family:inherit; cursor:pointer; min-height:46px}
+    border-radius:12px; padding:11px 8px; font-size:.86rem; font-weight:650; font-family:inherit; cursor:pointer; min-height:46px}
   .row button:active{transform:scale(.985)}
   .row button.pri{background:var(--toll); color:#04150C; border-color:var(--toll)}
   .row button.on{border-color:var(--toll); color:var(--toll)}
   button:focus-visible{outline:2px solid var(--toll); outline-offset:2px}
-
   .seg{display:grid; grid-template-columns:1fr 1fr; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:3px; gap:3px}
   .seg button{border:none; background:transparent; padding:9px 6px; font-size:.8rem; border-radius:9px; color:var(--dim); font-family:inherit; font-weight:650; cursor:pointer}
   .seg button.sel{background:#22301F; color:var(--ink)}
-  .segnote{font-size:.72rem; color:var(--dim); margin:-4px 2px 0; line-height:1.4}
-
-  h2{font-size:.68rem; letter-spacing:.16em; text-transform:uppercase; color:var(--dim); margin:6px 2px 0; font-weight:600}
+  .seg.sentido button.sel{background:#1F3A2A}
+  .segnote{font-size:.72rem; color:var(--dim); margin:-2px 2px 0; line-height:1.4}
+  h2{font-size:.66rem; letter-spacing:.15em; text-transform:uppercase; color:var(--dim); margin:6px 2px 0; font-weight:600}
   ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px}
   li{background:var(--panel); border:1px solid var(--line); border-radius:11px; padding:8px 12px 8px 10px;
      display:grid; grid-template-columns:26px 1fr auto; gap:2px 10px; align-items:center}
   li .n2{font-size:.9rem; font-weight:600; min-width:0}
-  li .d2{font-size:.88rem; font-weight:700; color:var(--dim); white-space:nowrap; text-align:right}
-  li .t2{grid-column:2/-1; font-size:.68rem; letter-spacing:.08em; text-transform:uppercase}
+  li .d2{font-size:.86rem; font-weight:700; color:var(--dim); white-space:nowrap; text-align:right}
+  li .t2{grid-column:2/-1; font-size:.66rem; letter-spacing:.08em; text-transform:uppercase}
   li .c2{grid-column:2/-1; font-size:.8rem; color:var(--dim)}
   li .ic{grid-row:span 2}
   .t-toll{color:var(--toll)} .t-ff{color:var(--ff)} .t-fuel{color:var(--fuel)} .t-cop{color:var(--cop)} .t-mark{color:var(--dim)} .t-warn{color:var(--warn)}
   li.ruim{border-color:#6A4A12; background:#1E1A0E}
-
+  details.caixa{background:#1C1426; border:1px solid #3A2A4F; border-radius:12px; padding:0 13px}
+  details.caixa summary{cursor:pointer; font-size:.84rem; padding:10px 0; list-style:none; display:flex; gap:8px; align-items:flex-start; line-height:1.35}
+  details.caixa summary::-webkit-details-marker{display:none}
+  details.caixa .quando{font-size:.64rem; letter-spacing:.1em; text-transform:uppercase; color:#A58BC4}
+  details.caixa p{margin:0 0 8px; display:grid; grid-template-columns:22px 1fr; gap:6px; align-items:start; font-size:.84rem; line-height:1.45}
   .note{font-size:.78rem; color:var(--dim); line-height:1.5; padding:0 2px; margin:0}
   .warnbox{background:var(--ffbg); border:1px solid #4A3A12; color:#F5D28A; border-radius:11px; padding:11px 13px; font-size:.84rem; line-height:1.45}
   .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:6px}
-  .stat{background:var(--panel); border:1px solid var(--line); border-radius:11px; padding:8px 4px; text-align:center}
-  .stat b{display:block; font-size:1.05rem; font-weight:800}
-  .stat span{font-size:.56rem; letter-spacing:.08em; text-transform:uppercase; color:var(--dim)}
+  .stat{background:var(--panel); border:1px solid var(--line); border-radius:11px; padding:7px 4px; text-align:center}
+  .stat b{display:block; font-size:1.02rem; font-weight:800}
+  .stat span{font-size:.55rem; letter-spacing:.08em; text-transform:uppercase; color:var(--dim)}
   details.plano{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:2px 14px}
   details.plano summary{cursor:pointer; font-weight:700; font-size:.9rem; padding:10px 0}
   details.plano .pl{font-size:.85rem; color:var(--dim); line-height:1.6; padding:2px 0 12px}
   details.plano .pl b{color:var(--ink)}
   .offline{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:10px 12px; display:grid; gap:8px}
   .offline .lin{display:flex; justify-content:space-between; gap:10px; font-size:.82rem; color:var(--dim); align-items:center}
-  .offline .lin b{color:var(--ink)}
+  .offline .lin b{color:var(--ink); text-align:right}
   .barra{height:6px; background:#0E130F; border-radius:4px; overflow:hidden}
   .barra i{display:block; height:100%; width:0; background:var(--toll)}
 </style>
@@ -130,14 +129,16 @@
 <body>
 
 <div class="wrap">
-
   <header>
-    <h1 id="titulo">Copiloto · Santos</h1>
+    <h1 id="titulo">Copiloto</h1>
     <div class="gps"><span id="gstat">iniciando…</span><span class="gpsdot" id="gdot"></span></div>
   </header>
 
-  <div class="banner" id="bannerVoz" hidden>🔇 A voz travou. Toque aqui para religar.</div>
-  <div class="avisos" id="avisos" hidden></div>
+  <div class="banner verde" id="bannerVoz" hidden>🔊 <b>Toque aqui para ligar a voz.</b> O celular só libera o som depois de um toque.</div>
+  <div class="banner verde" id="bannerNova" hidden>🔄 <b>Versão nova pronta.</b> Toque aqui com o carro PARADO (depois toque de novo para ligar a voz).</div>
+  <div class="banner verm" id="bannerGps" hidden></div>
+  <div class="banner amar" id="bannerIos" hidden>📱 <b>iPhone:</b> toque em Compartilhar → <b>Adicionar à Tela de Início</b> e use o app pelo ícone. O que for baixado aqui no Safari não vale no ícone.</div>
+  <div class="banner amar" id="bannerTela" hidden>🔆 A tela pode apagar sozinha. Durante a viagem deixem o bloqueio automático da tela em <b>Nunca</b> e a economia de bateria desligada.</div>
 
   <div class="mapbox">
     <div id="map"></div>
@@ -158,10 +159,10 @@
   </div>
 
   <div class="big k-mark" id="card">
-    <p class="kicker" id="kicker"><span class="ic" id="kic"></span><span id="ktx">Iniciando…</span></p>
+    <p class="kicker"><span class="ic" id="kic"></span><span id="ktx">Iniciando…</span></p>
     <p class="name" id="pname">Copiloto pronto</p>
     <div class="dist"><span class="n" id="pdist">—</span><span class="u" id="punit"></span></div>
-    <p class="det" id="pdet">Permita a localização quando o navegador pedir. A voz avisa pedágio, posto, serra e chegada.</p>
+    <p class="det" id="pdet">Permita a localização quando o aparelho pedir.</p>
   </div>
 
   <div class="row">
@@ -169,15 +170,12 @@
     <button id="btnVoz" class="on">Voz: ligada</button>
   </div>
 
-  <div class="seg" role="group" aria-label="Trecho Taubaté–Guararema (troca sozinho pela posição do carro)">
-    <button id="segT" class="sel">pela Carvalho Pinto</button>
-    <button id="segG">pela Dutra</button>
+  <div class="seg sentido" role="group" aria-label="Sentido da viagem">
+    <button id="segIda">Ida · para Santos</button>
+    <button id="segVolta">Volta · para São Gonçalo</button>
   </div>
-  <div class="seg" role="group" aria-label="Descida da serra (troca sozinha pela posição do carro)">
-    <button id="segI" class="sel">desce pela Imigrantes</button>
-    <button id="segA">desce pela Anchieta</button>
-  </div>
-  <p class="segnote">Entre Taubaté e Guararema dá pra ir pela Carvalho Pinto ou pela Dutra, e a serra dá pra descer pela Imigrantes ou pela Anchieta. Sigam o Waze: o app percebe sozinho por onde vocês foram.</p>
+  <div id="dims" style="display:grid; gap:8px"></div>
+  <p class="segnote">Sigam o Waze: o app percebe sozinho o sentido e por onde vocês foram.</p>
 
   <div class="row">
     <button id="btnSkip">Já passei ✓</button>
@@ -188,6 +186,8 @@
   <h2>Vem depois</h2>
   <ul id="lista"></ul>
 
+  <details class="caixa" id="avisos" hidden></details>
+
   <div class="warnbox" id="tot"></div>
 
   <h2>Tempo na rota <span id="climaHora" style="letter-spacing:0;text-transform:none"></span></h2>
@@ -195,8 +195,8 @@
 
   <h2>Sem internet</h2>
   <div class="offline">
-    <div class="lin"><span>Rota, pontos, voz gravada e avisos salvos</span><b id="offApp">verificando…</b></div>
-    <div class="lin"><span>Ruas do mapa ao longo da rota</span><b id="offMapa">—</b></div>
+    <div class="lin"><span>App, rota, pontos e voz gravada</span><b id="offApp">verificando…</b></div>
+    <div class="lin"><span>Ruas do mapa (ida e volta)</span><b id="offMapa">—</b></div>
     <div class="barra"><i id="offBarra"></i></div>
     <div class="row"><button id="btnMapa">⬇️ Baixar mapa da rota (use Wi-Fi)</button></div>
   </div>
@@ -206,13 +206,12 @@
     <div class="pl" id="plano"></div>
   </details>
 
-  <p class="note"><b>Regra do celular do carona: deixe este app ABERTO e NA FRENTE, no suporte.</b> Se abrir outro app por cima ou bloquear a tela, a seta e a voz pausam até você voltar (aí religam sozinhas). Rota, pontos, distâncias e a voz gravada funcionam <b>sem internet</b>; o mapa também, depois de baixado aqui em cima. A previsão do tempo e os avisos do dia precisam de sinal (sem sinal, mostram a última versão salva). Para instalar: menu do navegador → "Adicionar à tela de início".</p>
+  <p class="note" id="nota"></p>
   <p class="note" id="versao"></p>
-
 </div>
 
 <script>
-/* Dados (DADOS.T/G/TA/GA + META) vêm de dados.js; áudios gravados (VOZ) vêm de voz.js. */
+/* Copiloto RJ ⇄ Santos. Dados: dados.js (DADOS_S/META_S, 2 sentidos × 8 linhas). Voz gravada: voz.js (VOZ, PRE_LISTA, VERSAO). */
 const LBL={toll:'Pedágio',ff:'Free flow — sem cancela',fuel:'Posto / parada',cop:'Polícia rodoviária',mark:'Marco',warn:'Atenção na pista',fim:'Chegada'};
 const COR={toll:'#3DD68C',ff:'#FFB020',fuel:'#4FA8FF',cop:'#FF6B5A',mark:'#C0CDC2',warn:'#C77DFF',fim:'#EAF2EB'};
 const GLIFO={
@@ -227,29 +226,36 @@ const GLIFO={
 const tipoIc=p=>p.id==='chegada'?'fim':p.t;
 function icSvg(tipo, px){ px=px||26;
   return '<svg viewBox="-12 -12 24 24" width="'+px+'" height="'+px+'"><circle r="11" fill="'+COR[tipo]+'" stroke="#0B0F0C" stroke-width="1.6"/>'+GLIFO[tipo]+'</svg>'; }
-
-const VARS=['T','G','TA','GA'];
-const supDe=v=>v[0], infDe=v=>v.length>1?'A':'I', varDe=(s,i)=>s+(i==='A'?'A':'');
-const nomeVar=v=>(supDe(v)==='T'?'pela Carvalho Pinto':'pela Dutra')+(infDe(v)==='A'?' e Anchieta':' e Imigrantes');
-let rotaVar='T', voz=true, pulados=new Set(), desfeitos=[], avisou={}, watchId=null, ultima=null, wake=null;
-let segue=true, zoomManual=false, hist=[], rumo=0, velKmh=0, boaPrecisao=false, lastFixAt=0;
-let gpsQuerido=true, retryTimer=null, jaDeuZoom=false;
-let foraDaRota=false, jaNaRota=false, chegou=false;
-let mediaKmh=0, kmViagem=0, amostras=[];
-
 const $=id=>document.getElementById(id);
+const brl=v=>'R$ '+v.toFixed(2).replace('.',',');
+const IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const INSTALADO=(navigator.standalone===true)||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
+
+/* ---------- sentido (ida/volta) e linhas ---------- */
+function sentidoPadrao(){
+  try{ const q=new URLSearchParams(location.search).get('sentido'); if(q==='ida') return 'I'; if(q==='volta') return 'V'; }catch(e){}
+  return Date.now() < Date.parse(META_S.comum.viraVoltaEm) ? 'I' : 'V';
+}
+let sentido=sentidoPadrao();
+let DADOS=DADOS_S[sentido].linhas, META=META_S[sentido], IDS=Object.keys(DADOS);
+let rotaVar=META.linhaPadrao;
 const CFG=()=>DADOS[rotaVar];
 const pts=()=>CFG().P;
 const zonas=()=>CFG().Z;
+
+let voz=true, pulados=new Set(), desfeitos=[], avisou={}, watchId=null, ultima=null, wake=null;
+let segue=true, zoomManual=false, hist=[], rumo=0, velKmh=0, boaPrecisao=false, lastFixAt=0, tUltimoBom=0;
+let gpsQuerido=true, retryTimer=null, jaDeuZoom=false, interagiu=false;
+let foraDaRota=false, jaNaRota=false, chegou=false;
+let mediaKmh=0, kmViagem=0, amostras=[];
+let nRap=0, ultRap=null, rejeitados=0, desdeAproximado=0;
 const ativos=()=>pts().filter(p=>!pulados.has(p.n));
 const linhaPts=()=>CFG().R.map(p=>[p[0],p[1]]);
-const brl=v=>'R$ '+v.toFixed(2).replace('.',',');
-
 function hav(a,b,c,d){const R=6371,r=x=>x*Math.PI/180;
   const dl=r(c-a),dg=r(d-b),x=Math.sin(dl/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(dg/2)**2;
   return 2*R*Math.asin(Math.sqrt(x));}
 
-/* ---------- odômetro: projeção na rota real (km no sentido da viagem) ---------- */
+/* ---------- odômetro: projeção na linha real (km no sentido da viagem) ---------- */
 const KX=Math.cos(-23.4*Math.PI/180);
 function projEm(linha,lat,lon,kmMin,kmMax){
   let melhor={d:1e9,km:0};
@@ -265,21 +271,18 @@ function projEm(linha,lat,lon,kmMin,kmMax){
   }
   return {km:melhor.km, d:melhor.d*111.32};
 }
-/* janela perto do km atual (evita pulo quando a rota passa perto dela mesma); se não casar, projeção global */
 function projeta(v,lat,lon){
   const L=DADOS[v].R;
-  if(jaNaRota && !foraDaRota && v===rotaVar){
-    const w=projEm(L,lat,lon,kmViagem-15,kmViagem+40);
-    if(w.d<0.6) return w;
-  }
+  if(jaNaRota && !foraDaRota && v===rotaVar){ const w=projEm(L,lat,lon,kmViagem-15,kmViagem+40); if(w.d<0.6) return w; }
   return projEm(L,lat,lon);
 }
 function distAte(p){
-  if(boaPrecisao && jaNaRota && !foraDaRota) return Math.max(0, p.km - kmViagem);
+  if(boaPrecisao && jaNaRota && !foraDaRota) return p.km - kmViagem;
   return ultima ? hav(ultima.lat,ultima.lon,p.lat,p.lon) : null;
 }
+const custo=v=>{ const a=DADOS[v].attrs, b=DADOS[rotaVar].attrs; let c=0; for(const k in a) if(a[k]!==b[k]) c++; return c; };
 
-/* ---------- MAPA: Leaflet (rota e ícones) sobre fundo vetorial OpenFreeMap (sem chave, pode baixar p/ offline) ---------- */
+/* ---------- MAPA: Leaflet (rota e ícones) sobre fundo vetorial OpenFreeMap ---------- */
 let map=null, fundoVetorial=false;
 const ESTILO='https://tiles.openfreemap.org/styles/dark';
 function temWebGL(){ try{ const c=document.createElement('canvas'); return !!(c.getContext('webgl2')||c.getContext('webgl')); }catch(e){ return false; } }
@@ -290,14 +293,10 @@ try{
     L.maplibreGL({style:ESTILO, attribution:'&copy; <a href="https://openfreemap.org">OpenFreeMap</a> &copy; <a href="https://www.openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'}).addTo(map);
     fundoVetorial=true;
   }catch(e){
-    /* aparelho sem WebGL: ruas do OpenStreetMap só com internet (sem download em massa, pela regra de uso deles) */
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:17, className:'osm-escuro',
-      attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:17, className:'osm-escuro', attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
   }
   map.on('dragstart',()=>{segue=false; $('follow').classList.remove('on');});
-  map.getContainer().addEventListener('touchstart',e=>{
-    if(e.touches.length>1){ segue=false; $('follow').classList.remove('on'); }
-  },{passive:true});
+  map.getContainer().addEventListener('touchstart',e=>{ if(e.touches.length>1){ segue=false; $('follow').classList.remove('on'); } },{passive:true});
 }catch(e){ map=null; try{ document.querySelector('.mapbox').style.display='none'; }catch(_){} }
 
 let camadaRota=null, camadaPontos=null, marcaCarro=null, rastro=null, tracejada=null, anelProx=null;
@@ -305,42 +304,37 @@ function desenhaRota(){
   if(!map) return;
   try{
     if(camadaRota) map.removeLayer(camadaRota);
-    const camadas=VARS.filter(v=>v!==rotaVar).map(v=>L.polyline(DADOS[v].R.map(p=>[p[0],p[1]]),{color:'#3DD68C',weight:3,opacity:.22,dashArray:'6 8',interactive:false}));
+    const camadas=IDS.filter(v=>v!==rotaVar).map(v=>L.polyline(DADOS[v].R.map(p=>[p[0],p[1]]),{color:'#3DD68C',weight:3,opacity:.2,dashArray:'6 8',interactive:false}));
     camadas.push(L.polyline(linhaPts(),{color:'#0A2A1A',weight:9,opacity:.9,lineJoin:'round',interactive:false}));
     camadas.push(L.polyline(linhaPts(),{color:'#3DD68C',weight:4,opacity:.95,lineJoin:'round',interactive:false}));
     camadaRota=L.layerGroup(camadas).addTo(map);
   }catch(e){}
 }
-const iconePino=(tipo)=>L.divIcon({className:'pino', iconSize:[26,26], iconAnchor:[13,13], popupAnchor:[0,-12], html:icSvg(tipo,26)});
+const iconePino=tipo=>L.divIcon({className:'pino', iconSize:[26,26], iconAnchor:[13,13], popupAnchor:[0,-12], html:icSvg(tipo,26)});
 function desenhaPontos(){
   if(!map) return;
   try{
     if(camadaPontos) map.removeLayer(camadaPontos);
-    const g=[];
-    ativos().forEach(p=>{
-      g.push(L.marker([p.lat,p.lon],{icon:iconePino(tipoIc(p)), keyboard:false, riseOnHover:true})
-        .bindPopup('<b>'+p.n+'</b><br>'+p.d+'<br><i style="color:#8FA394">'+LBL[tipoIc(p)]+' · km '+Math.round(p.km)+' da viagem</i>'));
-    });
-    camadaPontos=L.layerGroup(g).addTo(map);
+    camadaPontos=L.layerGroup(ativos().map(p=>L.marker([p.lat,p.lon],{icon:iconePino(tipoIc(p)), keyboard:false})
+      .bindPopup('<b>'+p.n+'</b><br>'+p.d+'<br><i style="color:#8FA394">'+LBL[tipoIc(p)]+' · km '+Math.round(p.km)+' da viagem</i>'))).addTo(map);
   }catch(e){}
 }
 const iconeCarro=()=>L.divIcon({className:'', iconSize:[34,34], iconAnchor:[17,17],
   html:'<svg class="carro" width="34" height="34" viewBox="-17 -17 34 34" style="transform:rotate('+rumo+'deg)">'+
-       '<circle r="16" fill="rgba(61,214,140,.18)"/>'+
-       '<path d="M0,-11 L8,9 L0,4 L-8,9 Z" fill="'+(boaPrecisao?'#3DD68C':'#8FA394')+'" stroke="#0B0F0C" stroke-width="2"/></svg>'});
+       '<circle r="16" fill="rgba(61,214,140,.18)"/><path d="M0,-11 L8,9 L0,4 L-8,9 Z" fill="'+(boaPrecisao?'#3DD68C':'#8FA394')+'" stroke="#0B0F0C" stroke-width="2"/></svg>'});
 
+/* próximo ponto do CARTÃO: passou 150 m, sai do cartão */
 function proxAtual(){
+  if(chegou) return null;
   const lista=ativos(); if(!lista.length) return null;
   if(!ultima) return {p:lista[0], d:null};
   if(boaPrecisao && jaNaRota && !foraDaRota){
-    const alvo=lista.find(p=>p.km>=kmViagem-0.8);
-    if(!alvo) return null;
-    return {p:alvo, d:distAte(alvo)};
+    const alvo=lista.find(p=>p.km>=kmViagem-0.15);
+    return alvo ? {p:alvo, d:Math.max(0,distAte(alvo))} : null;
   }
   const com=lista.map(p=>({p,d:hav(ultima.lat,ultima.lon,p.lat,p.lon)}));
   const perto=com.reduce((a,b)=>b.d<a.d?b:a);
-  const seq=com.filter(x=>x.p.km>=perto.p.km-2).sort((a,b)=>a.p.km-b.p.km);
-  return seq[0]||perto;
+  return com.filter(x=>x.p.km>=perto.p.km-2).sort((a,b)=>a.p.km-b.p.km)[0]||perto;
 }
 function desenhaDinamico(){
   if(!map) return;
@@ -352,13 +346,10 @@ function desenhaDinamico(){
     } else if(anelProx){ map.removeLayer(anelProx); anelProx=null; }
     if(ultima && prox){
       const ll=[[ultima.lat,ultima.lon],[prox.p.lat,prox.p.lon]];
-      if(tracejada) tracejada.setLatLngs(ll);
-      else tracejada=L.polyline(ll,{color:'rgba(234,242,235,.55)', weight:2, dashArray:'6 8', interactive:false}).addTo(map);
+      if(tracejada) tracejada.setLatLngs(ll); else tracejada=L.polyline(ll,{color:'rgba(234,242,235,.55)', weight:2, dashArray:'6 8', interactive:false}).addTo(map);
     } else if(tracejada){ map.removeLayer(tracejada); tracejada=null; }
-    if(hist.length>1){
-      const ll=hist.map(h=>[h.lat,h.lon]);
-      if(rastro) rastro.setLatLngs(ll); else rastro=L.polyline(ll,{color:'rgba(234,242,235,.5)', weight:3, interactive:false}).addTo(map);
-    }
+    if(hist.length>1){ const ll=hist.map(h=>[h.lat,h.lon]);
+      if(rastro) rastro.setLatLngs(ll); else rastro=L.polyline(ll,{color:'rgba(234,242,235,.5)', weight:3, interactive:false}).addTo(map); }
     if(ultima){
       if(marcaCarro) marcaCarro.setLatLng([ultima.lat,ultima.lon]).setIcon(iconeCarro());
       else marcaCarro=L.marker([ultima.lat,ultima.lon],{icon:iconeCarro(),zIndexOffset:1000,interactive:false}).addTo(map);
@@ -369,84 +360,101 @@ $('zin').onclick=()=>{ if(!map) return; zoomManual=true; map.zoomIn(); };
 $('zout').onclick=()=>{ if(!map) return; zoomManual=true; map.zoomOut(); };
 $('follow').onclick=()=>{segue=!segue; $('follow').classList.toggle('on',segue);
   if(segue&&ultima&&map){ zoomManual=false; map.setView([ultima.lat,ultima.lon], boaPrecisao?14:map.getZoom()); }};
-$('legenda').innerHTML=[['toll','Pedágio'],['fuel','Posto / parada'],['warn','Atenção'],['cop','Polícia'],['mark','Marco'],['fim','Chegada']]
-  .map(([t,l])=>'<span><span class="ic">'+icSvg(t,20)+'</span>'+l+'</span>').join('');
+$('legenda').innerHTML=[['toll','Pedágio'],['fuel','Posto / parada'],['warn','Atenção'],['cop','Polícia'],['ff','Free flow'],['fim','Chegada']]
+  .map(([t,l])=>'<span><span class="ic">'+icSvg(t,18)+'</span>'+l+'</span>').join('');
 
-/* ---------- VOZ: áudio GRAVADO primeiro (funciona sem internet); voz do aparelho só para frases que mudam ---------- */
+/* ============================ VOZ ============================
+   MP3 gravado primeiro (funciona sem internet); voz do aparelho só para frases que mudam.
+   Token de geração: callback velho nunca corta frase nova. Destrave só é dado como feito quando o play resolve. */
 function hashTxt(s){ let h=0x811c9dc5; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,0x01000193)>>>0; } return ('0000000'+h.toString(16)).slice(-8); }
+const SILENCIO='data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjYyLjEyLjEwMAAAAAAAAAAAAAAA//OEwAAAAAAAAAAAAEluZm8AAAAPAAAADQAABaAAMzMzMzMzM0REREREREREVVVVVVVVVVVmZmZmZmZmd3d3d3d3d3eIiIiIiIiIiJmZmZmZmZmqqqqqqqqqqru7u7u7u7u7zMzMzMzMzN3d3d3d3d3d7u7u7u7u7u7/////////AAAAAExhdmM2Mi4yOAAAAAAAAAAAAAAAACQDkAAAAAAAAAWgUwWkcQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//NExAAAAANIAAAAAExBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExFMAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExKYAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExKwAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExKwAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExKwAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExKwAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExKwAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExKwAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExKwAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExKwAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NExKwAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NExKwAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
 const player=new Audio(); player.preload='auto';
-let filaFala=[], tocando=false, vozLivre=false, vozAparelho=null;
-function escolheVozAparelho(){
-  try{ const vs=speechSynthesis.getVoices().filter(v=>/^pt[-_]BR/i.test(v.lang));
-    vs.sort((a,b)=>(b.localService?1:0)-(a.localService?1:0)); vozAparelho=vs[0]||null; }catch(e){}
-}
-try{ escolheVozAparelho(); speechSynthesis.onvoiceschanged=escolheVozAparelho; }catch(e){}
-function fala(t, extra){
-  if(!voz||!t) return;
-  filaFala.push(t); if(extra) filaFala.push(extra);
-  if(filaFala.length>8) filaFala.splice(0, filaFala.length-8);
-  proxFala();
-}
-function fimFala(){ tocando=false; setTimeout(proxFala, 250); }
-function proxFala(){
-  if(tocando||!voz) return;
-  const t=filaFala.shift(); if(t==null) return;
-  tocando=true;
-  const arq=(typeof VOZ!=='undefined') && VOZ[hashTxt(t)];
-  if(arq){
-    let acabou=false; const ok=()=>{ if(!acabou){ acabou=true; fimFala(); } };
-    const falhou=()=>{ if(!acabou){ acabou=true; ttsFala(t, fimFala); } };
-    player.onended=ok; player.onerror=falhou;
-    /* toca a partir de um blob em memória: o Safari do iPhone falha com áudio servido direto do cache offline */
-    urlAudio(arq).then(u=>{
-      if(acabou) return;
-      player.src=u; const pr=player.play(); if(pr&&pr.catch) pr.catch(falhou);
-      setTimeout(()=>{ if(!acabou && player.paused && player.currentTime===0){ falhou(); } }, 3500);
-    }).catch(falhou);
-    setTimeout(ok, 45000);
-  } else ttsFala(t, fimFala);
-}
+let fila=[], tocando=false, geracao=0, desbloqueado=false, vozAparelho=null;
 const blobs={};
+function escolheVozAparelho(){ try{ const vs=speechSynthesis.getVoices().filter(v=>/^pt[-_]BR/i.test(v.lang)); vs.sort((a,b)=>(b.localService?1:0)-(a.localService?1:0)); vozAparelho=vs[0]||null; }catch(e){} }
+try{ escolheVozAparelho(); speechSynthesis.onvoiceschanged=escolheVozAparelho; }catch(e){}
 async function urlAudio(arq){
   if(blobs[arq]) return blobs[arq];
-  const r=await fetch(arq); if(!r.ok) throw new Error('audio '+r.status);
-  const b=await r.blob(); if(!b.size) throw new Error('audio vazio');
-  return (blobs[arq]=URL.createObjectURL(b));
+  const ctl=new AbortController(); const t=setTimeout(()=>ctl.abort(),3500);
+  try{ const r=await fetch(arq,{signal:ctl.signal}); if(!r.ok) throw new Error('audio '+r.status);
+    const b=await r.blob(); if(!b.size) throw new Error('audio vazio'); return (blobs[arq]=URL.createObjectURL(b)); }
+  finally{ clearTimeout(t); }
 }
-function ttsFala(t, done){
-  if(!window.speechSynthesis){ done(); return; }
+setTimeout(async()=>{ if(typeof VOZ==='undefined') return; for(const arq of Object.values(VOZ)){ try{ await urlAudio(arq); }catch(e){} } }, 3000);
+
+function fala(t, o){
+  o=o||{};
+  if(!voz||!t) return;
+  fila.push({t, curta:!!o.curta, quando:Date.now(), fim:o.aoTerminar||null});
+  if(o.extra) fila.push({t:o.extra, curta:!!o.curta, quando:Date.now()});
+  if(fila.length>10) fila.splice(0, fila.length-10);
+  proxFala();
+}
+function proxFala(){
+  if(tocando||!voz) return;
+  let it=fila.shift();
+  while(it && it.curta && Date.now()-it.quando>12000) it=fila.shift();
+  if(!it) return;
+  tocando=true; const g=++geracao;
+  const terminou=ok=>{ if(g!==geracao) return; tocando=false; if(ok && it.fim) try{ it.fim(); }catch(e){} setTimeout(proxFala, 250); };
+  const arq=(typeof VOZ!=='undefined') && VOZ[hashTxt(it.t)];
+  if(!arq){ ttsFala(it.t, g, terminou); return; }
+  let acabou=false;
+  const ok=()=>{ if(acabou||g!==geracao) return; acabou=true; terminou(true); };
+  const falhou=e=>{ if(acabou||g!==geracao) return; acabou=true;
+    if(e && e.name==='NotAllowedError'){ desbloqueado=false; mostraBannerVoz(); }
+    ttsFala(it.t, g, terminou); };
+  player.onended=ok; player.onerror=()=>falhou();
+  player.onplaying=()=>{ if(g!==geracao) return; desbloqueado=true; $('bannerVoz').hidden=true;
+    const dur=isFinite(player.duration)&&player.duration>0 ? player.duration : 15;
+    setTimeout(()=>{ if(!acabou && g===geracao) ok(); }, (dur+3)*1000); };
+  const vigia=setTimeout(()=>{ if(!acabou && g===geracao && (player.paused || player.currentTime===0)) falhou(); }, 5000);
+  urlAudio(arq).then(u=>{
+    if(acabou||g!==geracao||!voz){ clearTimeout(vigia); return; }
+    player.src=u; const pr=player.play(); if(pr&&pr.catch) pr.catch(err=>{ clearTimeout(vigia); falhou(err); });
+  }).catch(()=>{ clearTimeout(vigia); falhou(); });
+}
+function ttsFala(t, g, terminou){
+  if(!window.speechSynthesis||!voz){ terminou(false); return; }
   try{
     const u=new SpeechSynthesisUtterance(t); u.lang='pt-BR'; u.rate=.95; if(vozAparelho) u.voice=vozAparelho;
-    let fim=false, comecou=false; const f=()=>{ if(!fim){ fim=true; done(); } };
-    u.onstart=()=>{ comecou=true; $('bannerVoz').hidden=true; }; u.onend=f; u.onerror=f;
+    let fim=false, comecou=false; const f=ok=>{ if(fim) return; fim=true; terminou(ok); };
+    u.onstart=()=>{ comecou=true; }; u.onend=()=>f(true); u.onerror=()=>f(false);
     speechSynthesis.speak(u);
-    setTimeout(()=>{ if(!comecou && voz && document.visibilityState==='visible'){ try{ speechSynthesis.cancel(); speechSynthesis.resume(); }catch(e){} $('bannerVoz').hidden=false; f(); } }, 6000);
-    setTimeout(f, 30000);
-  }catch(e){ done(); }
+    setTimeout(()=>{ if(!fim && !comecou && g===geracao){ try{ speechSynthesis.cancel(); }catch(e){} if(!desbloqueado) mostraBannerVoz(); f(false); } }, 6000);
+    setTimeout(()=>f(comecou), 30000);
+  }catch(e){ terminou(false); }
 }
-/* iOS/Android só liberam áudio e voz depois de um toque — destrava os dois no 1º gesto */
+function mostraBannerVoz(){ if(voz && !desbloqueado) $('bannerVoz').hidden=false; }
 function destravaVoz(){
-  if(vozLivre) return; vozLivre=true;
-  try{ player.src='data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjYyLjEyLjEwMAAAAAAAAAAAAAAA//OEwAAAAAAAAAAAAEluZm8AAAAPAAAADQAABaAAMzMzMzMzM0REREREREREVVVVVVVVVVVmZmZmZmZmd3d3d3d3d3eIiIiIiIiIiJmZmZmZmZmqqqqqqqqqqru7u7u7u7u7zMzMzMzMzN3d3d3d3d3d7u7u7u7u7u7/////////AAAAAExhdmM2Mi4yOAAAAAAAAAAAAAAAACQDkAAAAAAAAAWgUwWkcQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//NExAAAAANIAAAAAExBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExFMAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExKYAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExKwAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExKwAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExKwAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExKwAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExKwAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExKwAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExKwAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExKwAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NExKwAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NExKwAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV'; const pr=player.play(); if(pr&&pr.catch) pr.catch(()=>{}); }catch(e){}
+  interagiu=true;
+  pegaWake();
+  if(desbloqueado || tocando) return;
+  try{ if(navigator.audioSession) navigator.audioSession.type='playback'; }catch(e){}
+  try{ player.onended=null; player.onerror=null; player.onplaying=null; player.src=SILENCIO;
+    const pr=player.play(); if(pr&&pr.then) pr.then(()=>{ desbloqueado=true; $('bannerVoz').hidden=true; setTimeout(falaAvisos,1200); proxFala(); }).catch(()=>{}); }catch(e){}
   try{ const u=new SpeechSynthesisUtterance(' '); u.volume=0; speechSynthesis.speak(u); }catch(e){}
 }
-document.addEventListener('touchend', destravaVoz, {once:true, passive:true});
-document.addEventListener('click', destravaVoz, {once:true});
-$('bannerVoz').onclick=()=>{ vozLivre=false; destravaVoz(); $('bannerVoz').hidden=true; tocando=false; fala('Voz religada.'); };
+['touchend','pointerup','click'].forEach(ev=>document.addEventListener(ev, destravaVoz, {passive:true}));
+$('bannerVoz').onclick=()=>destravaVoz();
+function pararVoz(){ geracao++; fila=[]; tocando=false; try{ player.pause(); }catch(e){} try{ speechSynthesis.cancel(); }catch(e){} }
+
 function fmt(km){ return km<1 ? [Math.round(km*1000),'metros'] : [km<10?km.toFixed(1).replace('.',','):Math.round(km),'km']; }
 const hhmm=d=>String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+const falaDist=d=> d<1 ? (Math.max(1,Math.floor(d*10))*100)+' metros' : d.toFixed(1).replace('.',',').replace(',0','')+' quilômetros';
 
-/* ---------- cartão / lista / avisos falados ---------- */
-/* ATENÇÃO: estas frases têm áudio gravado (voz.js) — make_voz.mjs usa exatamente as mesmas regras */
-function modosVoz(pt){ /* quais avisos este ponto fala: 10 km, 3 km, chegando */
+/* ATENÇÃO: estas frases têm áudio gravado (voz.js) — make_voz2.mjs usa exatamente as mesmas regras */
+function modosVoz(pt){
   if(pt.voz==='3' || pt.t==='cop') return {dez:false, tres:true, perto:false};
   if(pt.voz==='10') return {dez:true, tres:false, perto:false};
+  if(pt.voz==='perto') return {dez:false, tres:false, perto:true};
   const dez = pt.t==='toll'||pt.t==='ff'||pt.t==='fuel'||pt.t==='warn';
   return {dez, tres:true, perto:true};
 }
 function frase10(pt){ return 'A dez quilômetros: '+(pt.f||pt.n)+(pt.t==='toll'?'. Separem o pagamento.':''); }
 function frase3(pt){ return 'Em 3 quilômetros: '+(pt.f||pt.n); }
 function fraseChegando(pt){ return 'Chegando: '+(pt.fc||pt.f||pt.n); }
+
 function render(){
   const lista=ativos();
   const prox=proxAtual();
@@ -455,7 +463,7 @@ function render(){
     $('card').className='big k-mark';
     $('kic').innerHTML=icSvg(chegou?'fim':'mark',22);
     $('ktx').textContent= chegou ? 'Chegada' : 'Fim da lista';
-    $('pname').textContent= chegou ? 'Chegamos a Santos 🏖️' : 'Nenhum ponto pela frente';
+    $('pname').textContent= chegou ? META.chegadaTitulo : 'Nenhum ponto pela frente';
     $('pdist').textContent='—'; $('punit').textContent='';
     $('pdet').textContent= chegou ? META.chegadaTexto : 'Use ↩ Desfazer se marcou algum ponto sem querer.';
     $('lista').innerHTML='';
@@ -464,7 +472,7 @@ function render(){
     $('card').className='big k-'+prox.p.t;
     $('kic').innerHTML=icSvg(tp,22);
     let kick=LBL[tp];
-    if(!jaNaRota && ultima && boaPrecisao) kick+=' · indo para a BR-101';
+    if(!jaNaRota && ultima && boaPrecisao) kick+=' · indo para o início da rota';
     else if(foraDaRota) kick+=' · fora da rota (linha reta)';
     else if(boaPrecisao) kick+=' · pela estrada';
     $('ktx').textContent=kick;
@@ -474,59 +482,77 @@ function render(){
     $('pdet').textContent=det;
     if(prox.d==null){ $('pdist').textContent='—'; $('punit').textContent=''; }
     else { const [n,u]=fmt(prox.d); $('pdist').textContent=n; $('punit').textContent=u; }
-
-    const seq = lista.filter(x=>x.km>=prox.p.km && x.n!==prox.p.n).slice(0,6);
+    const seq=lista.filter(x=>x.km>=prox.p.km && x.n!==prox.p.n).slice(0,6);
     $('lista').innerHTML=seq.map(x=>{
       const dr=distAte(x);
-      let dd = dr==null ? ('km '+Math.round(x.km)) : (()=>{const [n,u]=fmt(dr); return n+' '+u;})();
-      if(dr!=null && vRef>0) dd += ' · '+Math.round(dr/vRef*60)+' min';
+      let dd = dr==null ? ('km '+Math.round(x.km)) : (()=>{const [n,u]=fmt(Math.max(0,dr)); return n+' '+u;})();
+      if(dr!=null && vRef>0) dd += ' · '+Math.round(Math.max(0,dr)/vRef*60)+' min';
       const tp2=tipoIc(x);
-      return '<li><span class="ic">'+icSvg(tp2,26)+'</span><span class="n2">'+x.n+'</span><span class="d2">'+dd+'</span>'+
-             '<span class="t2 t-'+x.t+'">'+LBL[tp2]+'</span></li>';
+      return '<li><span class="ic">'+icSvg(tp2,26)+'</span><span class="n2">'+x.n+'</span><span class="d2">'+dd+'</span><span class="t2 t-'+x.t+'">'+LBL[tp2]+'</span></li>';
     }).join('');
   }
-
   const tolls=pts().filter(p=>p.t==='toll'||p.t==='ff');
   const soma=tolls.reduce((s,p)=>s+(p.v||0),0);
-  $('tot').innerHTML='<b>Pedágio '+nomeVar(rotaVar)+': '+brl(soma)+'</b> em '+tolls.length+' cobranças (carro de passeio, valores conferidos em '+META.pedagioData+'). '+META.pedagioNota;
+  $('tot').innerHTML='<b>Pedágio '+nomeLinha(rotaVar)+': '+brl(soma)+'</b> em '+tolls.filter(p=>p.t==='toll').length+' praças (carro, valores conferidos em '+META_S.comum.pedagioData+').'+(tolls.some(p=>p.t==='ff')?' <b>+ free flow</b> (valor por trecho e horário, pagar em até 30 dias).':'')+' '+META.pedagioNota;
 
+  /* VOZ: a frase gravada só sai quando a distância real bate com o texto; senão diz a distância real ou fica quieto */
   if(ultima && boaPrecisao && jaNaRota && !foraDaRota){
     lista.filter(x=>x.km>=kmViagem-0.8).slice(0,4).forEach(pt=>{
-      const dr=distAte(pt); if(dr==null) return;
-      const k=pt.n; avisou[k]=avisou[k]||{};
-      const m=modosVoz(pt);
-      if(dr<=10 && dr>3.2 && !avisou[k].dez){ avisou[k].dez=1; if(m.dez) fala(frase10(pt)); }
-      if(dr<=3 && dr>0.9 && !avisou[k].longe){ avisou[k].longe=1; avisou[k].dez=1; if(m.tres) fala(frase3(pt)); }
-      if(dr<=0.8 && !avisou[k].perto){ avisou[k].perto=1; avisou[k].longe=1; avisou[k].dez=1;
-        if(m.perto){ fala(fraseChegando(pt)); if(navigator.vibrate) navigator.vibrate([120,60,120]); } }
+      const dr=pt.km-kmViagem;
+      const k=pt.n; const A=avisou[k]=avisou[k]||{};
+      const m=modosVoz(pt); const nome=pt.f||pt.n; const perto=pt.perto||0.8;
+      const diz=t=>{ A.falou=1; fala(t,{curta:true}); };
+      if(dr < -0.1){ A.dez=A.longe=A.perto=1; return; }
+      if(dr<=10 && dr>3.2 && !A.dez){ A.dez=1;
+        if(m.dez){ if(dr>=8.5) diz(frase10(pt)); else if(!m.tres && !m.perto) diz('A '+falaDist(dr)+': '+nome); } }
+      if(dr<=3 && dr>perto+0.1 && !A.longe){ A.longe=1; A.dez=1;
+        if(m.tres && dr>=2.2) diz(frase3(pt));
+        else if((m.tres && !m.perto) || (!m.tres && !m.perto && m.dez && !A.falou)) diz('A '+falaDist(dr)+': '+nome); }
+      if(dr<=perto && !A.perto){ A.perto=1; A.longe=1; A.dez=1;
+        if(m.perto){ diz(fraseChegando(pt)); if(interagiu && navigator.vibrate) try{ navigator.vibrate([120,60,120]); }catch(e){} } }
     });
   }
   if(segue && ultima && map) map.setView([ultima.lat,ultima.lon]);
   desenhaDinamico();
 }
 
-/* ---------- estado salvo (só preferências; pontos pulados NÃO persistem) ---------- */
-try{ const S=JSON.parse(localStorage.getItem('copSantos1')||'{}');
-  if(S.voz===false) voz=false;
-  if(VARS.includes(S.rotaVar)) rotaVar=S.rotaVar;
-}catch(e){}
-function salva(){ try{ localStorage.setItem('copSantos1', JSON.stringify({voz, rotaVar})); }catch(e){} }
+/* ---------- preferência de voz; linha detectada automaticamente vale por 10 h (toque manual NÃO é salvo) ---------- */
+try{ const S=JSON.parse(localStorage.getItem('copSantos2')||'{}'); if(S.voz===false) voz=false; }catch(e){}
+function salva(){ try{ localStorage.setItem('copSantos2', JSON.stringify({voz})); }catch(e){} }
+function restauraLinhaAuto(){
+  try{ const A=JSON.parse(localStorage.getItem('copSantosLinhaAuto')||'null');
+    if(A && A.s===sentido && DADOS[A.v] && Date.now()-(A.t||0) < 10*3600000) rotaVar=A.v; }catch(e){}
+}
 
-/* ---------- GPS 24/7 com vigia ---------- */
-async function pegaWake(){ try{ if(wake && !wake.released) return; wake=await navigator.wakeLock.request('screen'); }catch(e){} }
+/* ---------- GPS ---------- */
+async function pegaWake(){
+  if(!('wakeLock' in navigator)){ if(gpsQuerido && interagiu) $('bannerTela').hidden=false; return; }
+  try{ if(wake && !wake.released) return; wake=await navigator.wakeLock.request('screen'); $('bannerTela').hidden=true;
+    wake.addEventListener('release',()=>{ if(document.visibilityState==='visible' && gpsQuerido) setTimeout(pegaWake,500); });
+  }catch(e){ if(gpsQuerido && interagiu && document.visibilityState==='visible') $('bannerTela').hidden=false; }
+}
 function silenciaAtras(){ pts().forEach(pt=>{ if(pt.km<kmViagem-0.8){ avisou[pt.n]=Object.assign(avisou[pt.n]||{}, {dez:1,longe:1,perto:1}); } }); }
 function novoFix(p){
   lastFixAt=Date.now();
   const acc=p.coords.accuracy||99999;
   const lat=p.coords.latitude, lon=p.coords.longitude;
-  $('gdot').className='gpsdot on';
-  if(acc>1500){
-    boaPrecisao=false;
-    $('gstat').textContent='±'+(acc/1000).toFixed(0)+' km — esperando GPS de verdade';
-    if(!ultima){ ultima={lat,lon}; }
-    $('vel').hidden=true;
+  if(p.coords.speed!=null && !isNaN(p.coords.speed)) velKmh=Math.round(p.coords.speed*3.6);
+  /* localização aproximada nunca melhora sozinha: avisa */
+  if(acc>1500){ if(!desdeAproximado) desdeAproximado=Date.now(); } else desdeAproximado=0;
+  if(desdeAproximado && Date.now()-desdeAproximado>20000 && $('bannerGps').hidden){
+    $('bannerGps').innerHTML='📍 <b>O GPS está em modo aproximado</b> e o copiloto não consegue avisar. '+(IOS?'iPhone: Ajustes → Privacidade → Serviços de Localização → Safari (ou o app) → ligue <b>Localização Precisa</b>.':'Android: Configurações → Apps → Chrome → Permissões → Local → <b>Usar local exato</b>.');
+    $('bannerGps').hidden=false; fala('O GPS está em modo aproximado. Ative a localização precisa nas configurações do celular.');
+  }
+  if(!desdeAproximado && /aproximado/.test($('bannerGps').textContent)) $('bannerGps').hidden=true;
+  /* precisão ruim: só mostra no mapa, não mexe em km, avisos nem troca de linha */
+  if(acc>150){
+    $('gdot').className='gpsdot meio';
+    $('gstat').textContent= acc>1500 ? 'GPS aproximado' : 'sinal fraco ±'+Math.round(acc)+' m';
+    if(!ultima || !boaPrecisao) ultima={lat,lon};
+    $('vel').hidden=true; boaPrecisao=false;
     render(); return;
   }
+  $('gdot').className='gpsdot on';
   const primeiraBoa=!boaPrecisao;
   boaPrecisao=true;
   if(p.coords.heading!=null && !isNaN(p.coords.heading) && p.coords.speed>1) rumo=p.coords.heading;
@@ -536,56 +562,73 @@ function novoFix(p){
       rumo=(Math.atan2(y,x)*180/Math.PI+360)%360; } }
   ultima={lat,lon};
   hist.push({lat,lon}); if(hist.length>240) hist.shift();
-  if(p.coords.speed!=null && !isNaN(p.coords.speed)) velKmh=Math.round(p.coords.speed*3.6);
   if(velKmh>2){ $('vel').hidden=false; $('velN').textContent=velKmh; } else $('vel').hidden=true;
   $('gstat').textContent='±'+Math.round(acc)+' m';
 
+  /* sentido automático no começo: perto do início da volta (Santos) = volta; perto do início da ida = ida */
+  if(!jaNaRota){
+    const ini=s=>{ const L=DADOS_S[s].linhas[META_S[s].linhaPadrao].R[0]; return hav(lat,lon,L[0],L[1]); };
+    const outro=sentido==='I'?'V':'I';
+    if(ini(sentido)>20 && ini(outro)<20) trocaSentido(outro, true);
+  }
+
   let pjAqui=projeta(rotaVar,lat,lon);
-  const ds={}; VARS.forEach(v=>{ ds[v] = v===rotaVar ? pjAqui.d : projEm(DADOS[v].R,lat,lon).d; });
-  const desvio=Math.min(...VARS.map(v=>ds[v]));
-  const candidata=()=>{ const c=VARS.filter(v=>v!==rotaVar && ds[v]<0.7);
-    const custo=v=>(supDe(v)!==supDe(rotaVar))+(infDe(v)!==infDe(rotaVar));
-    c.sort((a,b)=>custo(a)-custo(b) || ds[a]-ds[b]); return c[0]||null; };
+  const pjs={}, ds={};
+  IDS.forEach(v=>{ pjs[v] = v===rotaVar ? pjAqui : projEm(DADOS[v].R,lat,lon); ds[v]=pjs[v].d; });
+  const desvio=Math.min(...IDS.map(v=>ds[v]));
+  const lenta=()=>{ const c=IDS.filter(v=>v!==rotaVar && ds[v]<0.7); c.sort((a,b)=>custo(a)-custo(b) || ds[a]-ds[b]); return c[0]||null; };
 
   if(!jaNaRota){
     if(desvio<1.0){
       jaNaRota=true;
-      if(ds[rotaVar]>1.5){ const c=candidata(); if(c) trocaRota(c,true); }
-      kmViagem=projEm(CFG().R,lat,lon).km; amostras=[]; mediaKmh=0;
+      if(ds[rotaVar]>0.7){ const c=lenta(); if(c) trocaRota(c,true,true); }
+      kmViagem=projEm(CFG().R,lat,lon).km; amostras=[]; mediaKmh=0; tUltimoBom=Date.now();
       silenciaAtras();
       fala('Copiloto na rota. Boa viagem!');
       pjAqui=projEm(CFG().R,lat,lon);
     } else {
-      $('gstat').textContent='±'+Math.round(acc)+' m · a '+desvio.toFixed(1).replace('.',',')+' km do início da rota';
+      $('gstat').textContent='±'+Math.round(acc)+' m · '+desvio.toFixed(1).replace('.',',')+' km do início';
       if(primeiraBoa && !jaDeuZoom && segue && !zoomManual && map){ jaDeuZoom=true; map.setView([lat,lon],13); }
       render(); return;
     }
   }
-  const cand = ds[rotaVar]>1.5 ? candidata() : null;
+  /* salto impossível (fix de antena/reflexo em túnel): ignora, a menos que se repita */
+  if(!foraDaRota && tUltimoBom && Date.now()-tUltimoBom<60000){
+    const dt=(Date.now()-tUltimoBom)/1000;
+    const maxSalto=(Math.max(velKmh,mediaKmh,80)/3600)*dt*1.6+0.4;
+    if(Math.abs(pjAqui.km-kmViagem)>maxSalto && ds[rotaVar]<0.6){ rejeitados++; if(rejeitados<5){ render(); return; } }
+  }
+  rejeitados=0;
+
+  /* troca de linha RÁPIDA na bifurcação real (3 fixes bons seguidos, km contínuo) ou LENTA (>1,5 km da linha) */
+  let rap=null;
+  if(acc<=60 && ds[rotaVar]>0.2){
+    const c=IDS.filter(v=>v!==rotaVar && ds[v]<0.06).sort((a,b)=>custo(a)-custo(b)||ds[a]-ds[b]);
+    rap=c.find(v=>Math.abs(pjs[v].km-kmViagem)<=1.5)||null;
+  }
+  nRap=(rap && rap===ultRap) ? nRap+1 : (rap?1:0); ultRap=rap;
+  const cand=(nRap>=3 ? rap : null) || (ds[rotaVar]>1.5 ? lenta() : null);
   if(cand){ trocaRota(cand,true); pjAqui=projEm(CFG().R,lat,lon); }
   else if(desvio>2.5){
     if(!foraDaRota){ foraDaRota=true;
       fala('Saímos da rota mapeada. Sem problema: sigam pelo Waze, que eu retomo os avisos assim que a rota reaparecer.'); }
   } else if(foraDaRota && desvio<1.2){
     foraDaRota=false;
+    if(ds[rotaVar]>0.7){ const c=lenta(); if(c) trocaRota(c,true,true); }
     kmViagem=projEm(CFG().R,lat,lon).km; amostras=[]; mediaKmh=0;
     silenciaAtras();
     fala('De volta à rota mapeada. Avisos retomados.');
     pjAqui=projEm(CFG().R,lat,lon);
   }
   if(foraDaRota){
-    $('gstat').textContent='±'+Math.round(acc)+' m · FORA DA ROTA ('+desvio.toFixed(1).replace('.',',')+' km)';
+    $('gstat').textContent='±'+Math.round(acc)+' m · FORA DA ROTA';
   } else {
-    kmViagem=pjAqui.km;
+    kmViagem=pjAqui.km; tUltimoBom=Date.now();
     amostras.push({t:Date.now(),km:kmViagem});
     while(amostras.length>2 && Date.now()-amostras[0].t>600000) amostras.shift();
-    if(amostras.length>1){
-      const a0=amostras[0], a1=amostras[amostras.length-1];
-      const dt=(a1.t-a0.t)/3600000;
-      if(dt>0.02) mediaKmh=Math.max(0,(a1.km-a0.km)/dt);
-    }
+    if(amostras.length>1){ const a0=amostras[0], a1=amostras[amostras.length-1]; const dt=(a1.t-a0.t)/3600000; if(dt>0.02) mediaKmh=Math.max(0,(a1.km-a0.km)/dt); }
     atualizaStats();
-    zonas().forEach(z=>{ if(kmViagem>=z.de && kmViagem<z.ate && !avisou['zona:'+z.id]){ avisou['zona:'+z.id]=1; fala(z.msg, fraseClima(z.clima)); } });
+    zonas().forEach(z=>{ if(kmViagem>=z.de && kmViagem<z.ate && !avisou['zona:'+z.id]){ avisou['zona:'+z.id]=1; fala(z.msg,{extra:fraseClima(z.clima)}); } });
     if(!chegou && kmViagem>=CFG().TOTAL-0.25){ chegou=true; fala(META.chegadaFala); }
   }
   if(primeiraBoa && !jaDeuZoom && segue && !zoomManual && map){ jaDeuZoom=true; map.setView([lat,lon],14); }
@@ -596,16 +639,21 @@ function atualizaStats(){
   const falta=Math.max(0,CFG().TOTAL-kmViagem);
   $('stFalta').textContent=falta.toFixed(0);
   $('stMedia').textContent=mediaKmh>5?Math.round(mediaKmh):'--';
-  $('stEta').textContent = (mediaKmh>25 && falta>0.3) ? hhmm(new Date(Date.now()+falta/mediaKmh*3600000)) : (chegou?'✓':'--');
+  $('stEta').textContent=(mediaKmh>25 && falta>0.3) ? hhmm(new Date(Date.now()+falta/mediaKmh*3600000)) : (chegou?'✓':'--');
+}
+function instrucaoPermissao(){
+  return IOS ? 'iPhone: Ajustes → Privacidade e Segurança → Serviços de Localização → Safari (ou este app) → "Durante o Uso", com Localização Precisa ligada.'
+             : 'Android: toque no ícone ao lado do endereço (ou nas informações do app) → Permissões → Localização → Permitir, com local exato.';
 }
 function startGps(){
   if(watchId!==null) return;
-  if(!navigator.geolocation){ $('gstat').textContent='sem GPS neste aparelho'; $('gdot').className='gpsdot err'; return; }
+  if(!navigator.geolocation){ $('gstat').textContent='sem GPS'; $('gdot').className='gpsdot err'; return; }
   if(retryTimer){ clearTimeout(retryTimer); retryTimer=null; }
   $('gstat').textContent='procurando…';
   watchId=navigator.geolocation.watchPosition(novoFix, e=>{
-      if(e.code===1){ $('gdot').className='gpsdot err'; $('gstat').textContent='permissão negada — toque no cadeado e permita'; return; }
-      $('gdot').className='gpsdot err'; $('gstat').textContent='sem sinal — reconectando…';
+      if(e.code===1){ $('gdot').className='gpsdot err'; $('gstat').textContent='sem permissão';
+        $('bannerGps').innerHTML='📍 <b>Localização bloqueada.</b> '+instrucaoPermissao(); $('bannerGps').hidden=false; return; }
+      $('gdot').className='gpsdot err'; $('gstat').textContent='sem sinal — religando';
       try{ navigator.geolocation.clearWatch(watchId); }catch(_){}
       watchId=null;
       retryTimer=setTimeout(()=>{ retryTimer=null; if(gpsQuerido) startGps(); }, 5000);
@@ -620,14 +668,14 @@ function stopGps(){
   if(watchId!==null){ try{navigator.geolocation.clearWatch(watchId);}catch(e){} watchId=null; }
   $('btnGps').textContent='Ligar GPS'; $('btnGps').classList.add('pri');
   $('gdot').className='gpsdot'; $('gstat').textContent='GPS desligado';
-  $('vel').hidden=true;
+  $('vel').hidden=true; $('bannerTela').hidden=true;
   try{ wake&&wake.release(); }catch(e){}
 }
 setInterval(()=>{ if(gpsQuerido && watchId!==null && lastFixAt && Date.now()-lastFixAt>15000 && document.visibilityState==='visible'){
   try{ navigator.geolocation.clearWatch(watchId); }catch(_){}
   watchId=null; startGps();
 }}, 8000);
-$('btnGps').onclick=()=>{ if(gpsQuerido){ gpsQuerido=false; stopGps(); } else { gpsQuerido=true; startGps(); } destravaVoz(); };
+$('btnGps').onclick=()=>{ if(gpsQuerido){ gpsQuerido=false; stopGps(); } else { gpsQuerido=true; startGps(); } };
 document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'){
   try{ speechSynthesis.resume(); }catch(e){}
   if(gpsQuerido){ pegaWake(); startGps(); }
@@ -636,39 +684,84 @@ document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==
 window.addEventListener('pageshow',()=>{ if(gpsQuerido){ pegaWake(); startGps(); } });
 
 $('btnVoz').onclick=()=>{ voz=!voz; $('btnVoz').textContent='Voz: '+(voz?'ligada':'desligada'); $('btnVoz').classList.toggle('on',voz);
-  if(!voz){ filaFala=[]; try{ player.pause(); speechSynthesis.cancel(); }catch(e){} tocando=false; $('bannerVoz').hidden=true; } salva(); };
-$('btnTest').onclick=()=>{ destravaVoz(); fala(META.testeVoz); };
+  if(!voz){ pararVoz(); $('bannerVoz').hidden=true; } else { mostraBannerVoz(); setTimeout(falaAvisos,500); } salva(); };
+$('btnTest').onclick=()=>{
+  /* toca o MP3 do teste DENTRO do toque: destrava o áudio de verdade, inclusive no iPhone */
+  pararVoz();
+  const txt=META_S.comum.testeVoz, arq=(typeof VOZ!=='undefined') && VOZ[hashTxt(txt)];
+  if(!arq){ fala(txt); return; }
+  try{
+    const g=++geracao; tocando=true;
+    player.onplaying=()=>{ desbloqueado=true; $('bannerVoz').hidden=true; };
+    player.onended=()=>{ if(g===geracao){ tocando=false; setTimeout(falaAvisos,800); proxFala(); } };
+    player.onerror=()=>{ if(g===geracao) ttsFala(txt, g, ()=>{ tocando=false; }); };
+    player.src=blobs[arq]||arq;
+    const pr=player.play(); if(pr&&pr.then) pr.then(()=>{ desbloqueado=true; $('bannerVoz').hidden=true; }).catch(()=>{ if(g===geracao){ tocando=false; mostraBannerVoz(); } });
+  }catch(e){ tocando=false; fala(txt); }
+};
 $('btnSkip').onclick=()=>{ const a=proxAtual(); if(!a) return;
-  pulados.add(a.p.n); desfeitos.push(a.p.n);
-  $('btnUndo').hidden=false; desenhaPontos(); render(); };
+  pulados.add(a.p.n); desfeitos.push(a.p.n); $('btnUndo').hidden=false; desenhaPontos(); render(); };
 $('btnUndo').onclick=()=>{ const k=desfeitos.pop(); if(k!=null) pulados.delete(k);
   if(!desfeitos.length) $('btnUndo').hidden=true; desenhaPontos(); render(); };
 
-function marcaSeg(){
-  $('segT').classList.toggle('sel',supDe(rotaVar)==='T'); $('segG').classList.toggle('sel',supDe(rotaVar)==='G');
-  $('segI').classList.toggle('sel',infDe(rotaVar)==='I'); $('segA').classList.toggle('sel',infDe(rotaVar)==='A');
+/* ---------- linhas (vale × São Paulo × serra) ---------- */
+function nomeLinha(v){ const a=DADOS[v].attrs; return META.dims.map(d=>{ const o=d.ops.find(x=>x[0]===a[d.id]); return o?o[2]:''; }).join(', '); }
+function montaDims(){
+  $('dims').innerHTML=META.dims.map(d=>'<div class="seg" role="group" aria-label="'+d.nome+'">'+
+    d.ops.map(o=>'<button data-dim="'+d.id+'" data-v="'+o[0]+'">'+o[1]+'</button>').join('')+'</div>').join('');
+  $('dims').querySelectorAll('button').forEach(b=>b.onclick=()=>{
+    const alvo=Object.assign({}, CFG().attrs, {[b.dataset.dim]:b.dataset.v});
+    const id=IDS.find(v=>Object.keys(alvo).every(k=>DADOS[v].attrs[k]===alvo[k]));
+    if(id) trocaRota(id,false);
+  });
+  marcaDims();
 }
-function trocaRota(r, auto){
+function marcaDims(){
+  const a=CFG().attrs;
+  $('dims').querySelectorAll('button').forEach(b=>b.classList.toggle('sel', a[b.dataset.dim]===b.dataset.v));
+  $('segIda').classList.toggle('sel',sentido==='I'); $('segVolta').classList.toggle('sel',sentido==='V');
+}
+function trocaRota(r, auto, calado){
   if(rotaVar===r || !DADOS[r]) return;
-  const antes=rotaVar;
-  rotaVar=r; amostras=[]; mediaKmh=0; foraDaRota=false;
+  const antes=DADOS[rotaVar].attrs;
+  rotaVar=r; amostras=[]; mediaKmh=0; foraDaRota=false; nRap=0; ultRap=null;
   if(ultima) kmViagem=projEm(CFG().R, ultima.lat, ultima.lon).km;
   if(ultima && jaNaRota) silenciaAtras();
-  marcaSeg(); salva(); desenhaRota(); desenhaPontos();
+  marcaDims(); desenhaRota(); desenhaPontos();
+  try{ if(auto) localStorage.setItem('copSantosLinhaAuto', JSON.stringify({s:sentido, v:rotaVar, t:Date.now()})); else localStorage.removeItem('copSantosLinhaAuto'); }catch(e){}
   if(!auto && map){ try{ map.fitBounds(L.latLngBounds(linhaPts()),{padding:[30,30]}); }catch(e){} }
-  if(auto){
-    if(supDe(antes)!==supDe(r)) fala(supDe(r)==='T' ? 'Detectei: vocês estão na Carvalho Pinto. Mapa e avisos ajustados.' : 'Detectei: vocês seguiram pela Dutra. Mapa e avisos ajustados.');
-    else fala(infDe(r)==='A' ? 'Detectei: a descida vai ser pela Anchieta. Mapa e avisos ajustados.' : 'Detectei: a descida vai ser pela Imigrantes. Mapa e avisos ajustados.');
+  if(auto && !calado){
+    const d=META.dims.find(x=>antes[x.id]!==CFG().attrs[x.id]);
+    if(d){ const o=d.ops.find(x=>x[0]===CFG().attrs[d.id]); if(o&&o[3]) fala(o[3]); }
   }
   atualizaStats(); renderClima(); render();
 }
-$('segT').onclick=()=>trocaRota(varDe('T',infDe(rotaVar)));
-$('segG').onclick=()=>trocaRota(varDe('G',infDe(rotaVar)));
-$('segI').onclick=()=>trocaRota(varDe(supDe(rotaVar),'I'));
-$('segA').onclick=()=>trocaRota(varDe(supDe(rotaVar),'A'));
+function aplicaSentido(){
+  DADOS=DADOS_S[sentido].linhas; META=META_S[sentido]; IDS=Object.keys(DADOS);
+  rotaVar=META.linhaPadrao; restauraLinhaAuto();
+  $('titulo').textContent=META.titulo;
+  $('planoTit').textContent=META.planoTitulo; $('plano').innerHTML=META.plano;
+  $('nota').innerHTML=META_S.comum.nota;
+  $('stFalta').textContent=Math.round(CFG().TOTAL); $('stRod').textContent='0'; $('stMedia').textContent='--'; $('stEta').textContent='--';
+  montaDims();
+}
+function trocaSentido(s, auto){
+  if(sentido===s) return;
+  sentido=s; aplicaSentido();
+  jaNaRota=false; foraDaRota=false; chegou=false; kmViagem=0; pulados.clear(); desfeitos=[]; $('btnUndo').hidden=true;
+  Object.keys(avisou).forEach(k=>{ if(!k.startsWith('aviso:')) delete avisou[k]; });
+  amostras=[]; mediaKmh=0; hist=[]; nRap=0; ultRap=null; tUltimoBom=0;
+  desenhaRota(); desenhaPontos();
+  if(map && !auto){ try{ map.fitBounds(L.latLngBounds(linhaPts()),{padding:[30,30]}); }catch(e){} }
+  if(auto) fala(META.detSentido);
+  if(ultimosAvisosBruto) mostraAvisos(ultimosAvisosBruto, ultimosAvisosCache);
+  atualizaClima(); render();
+}
+$('segIda').onclick=()=>trocaSentido('I');
+$('segVolta').onclick=()=>trocaSentido('V');
 
 /* ---------- TEMPO NA ROTA (Open-Meteo ao vivo; previsão para a hora em que vocês passam em cada ponto) ---------- */
-let clima=null, climaT=0;
+let clima=null, climaT=0, climaSentido=null;
 const WMO=c=> c===0?['☀️','céu limpo'] : c<=2?['🌤️','poucas nuvens'] : c===3?['☁️','nublado'] : (c===45||c===48)?['🌫️','NEBLINA']
   : c<=57?['🌦️','garoa'] : c===61?['🌧️','chuva fraca'] : c===63?['🌧️','chuva moderada'] : c<=67?['🌧️','CHUVA FORTE']
   : c<=77?['🌨️','neve'] : c===80?['🌦️','pancadas fracas'] : c<=82?['⛈️','PANCADAS FORTES'] : ['⛈️','TROVOADAS'];
@@ -677,23 +770,22 @@ function etaEm(kmPonto){
   const base = (!jaNaRota && Date.now()<META.saidaMs) ? META.saidaMs : Date.now();
   return base + Math.max(0,kmPonto-kmViagem)/v*3600000;
 }
-function horaChave(ms){ const d=new Date(ms); const p=n=>String(n).padStart(2,'0');
-  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':00'; }
+function horaChave(ms){ const d=new Date(ms); const p=n=>String(n).padStart(2,'0'); return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':00'; }
 function prevNoPonto(i){
-  if(!clima||!clima[i]||!clima[i].hourly) return null;
-  const pt=META.clima[i]; const km=pt.km[rotaVar];
+  if(!clima||climaSentido!==sentido||!clima[i]||!clima[i].hourly) return null;
+  const pt=META.clima[i]; const km=pt.km[rotaVar]; if(km==null) return null;
   const eta=etaEm(km); const H=clima[i].hourly; const k=H.time.indexOf(horaChave(eta));
   if(k<0) return null;
   return {eta, code:H.weather_code[k], mm:H.precipitation[k], prob:H.precipitation_probability?H.precipitation_probability[k]:null, vis:H.visibility?H.visibility[k]:null, temp:H.temperature_2m?H.temperature_2m[k]:null};
 }
 function ruim(pv){ return !!pv && (pv.code===45||pv.code===48||pv.code>=63||pv.mm>=2||(pv.vis!=null&&pv.vis<1000)); }
 function renderClima(){
-  if(!clima) return;
+  if(!clima || climaSentido!==sentido) return;
   $('climaHora').textContent='· atualizado '+hhmm(new Date(climaT))+(Date.now()-climaT>45*60000?' (antigo, sem sinal)':'');
   $('clima').innerHTML=META.clima.map((pt,i)=>{
     if(pt.km[rotaVar]<kmViagem-3) return '';
     const pv=prevNoPonto(i);
-    if(!pv) return '<li><span class="ic" style="font-size:1.2rem">·</span><span class="n2">'+pt.nome+'</span><span class="d2">sem dado</span></li>';
+    if(!pv) return '<li><span class="ic" style="font-size:1.2rem">·</span><span class="n2">'+pt.nome+'</span><span class="d2">sem previsão</span></li>';
     const [ic,tx]=WMO(pv.code);
     const vis = pv.vis!=null && pv.vis<5000 ? ' · visibilidade '+(pv.vis<1000?Math.round(pv.vis)+' m':(pv.vis/1000).toFixed(1).replace('.',',')+' km') : '';
     return '<li class="'+(ruim(pv)?'ruim':'')+'"><span class="ic" style="font-size:1.25rem">'+ic+'</span><span class="n2">'+pt.nome+'</span><span class="d2">~'+hhmm(new Date(pv.eta))+'</span>'+
@@ -701,39 +793,59 @@ function renderClima(){
   }).join('');
 }
 function fraseClima(id){
-  if(!id||!clima) return '';
+  if(!id) return '';
   const i=META.clima.findIndex(c=>c.id===id); if(i<0) return '';
   const pv=prevNoPonto(i); if(!ruim(pv)) return '';
   if(pv.code===45||pv.code===48||(pv.vis!=null&&pv.vis<1000)) return 'Previsão para agora: neblina. Farol baixo aceso, mais distância do carro da frente, e nada de pisca-alerta com o carro andando.';
   return 'Previsão para agora: '+WMO(pv.code)[1].toLowerCase()+'. Reduzam e aumentem a distância.';
 }
 async function atualizaClima(){
-  const P=META.clima;
+  const s=sentido, P=META_S[s].clima;
   const url='https://api.open-meteo.com/v1/forecast?latitude='+P.map(p=>p.lat).join(',')+'&longitude='+P.map(p=>p.lon).join(',')+
-    '&hourly=temperature_2m,precipitation,precipitation_probability,weather_code,visibility&forecast_days=3&timezone=America%2FSao_Paulo';
+    '&hourly=temperature_2m,precipitation,precipitation_probability,weather_code,visibility&forecast_days=16&timezone=America%2FSao_Paulo';
   try{
     const ctl=new AbortController(); const tm=setTimeout(()=>ctl.abort(),12000);
     const r=await fetch(url,{cache:'no-store',signal:ctl.signal}); clearTimeout(tm); if(!r.ok) throw new Error('http '+r.status);
-    const j=await r.json(); clima=Array.isArray(j)?j:[j]; climaT=Date.now();
-    try{ localStorage.setItem('copSantosClima', JSON.stringify({t:climaT, c:clima})); }catch(e){}
+    const j=await r.json(); if(s!==sentido) return;
+    clima=Array.isArray(j)?j:[j]; climaT=Date.now(); climaSentido=s;
+    try{ localStorage.setItem('copSantosClima_'+s, JSON.stringify({t:climaT, c:clima})); }catch(e){}
   }catch(e){
-    if(!clima){ try{ const c=JSON.parse(localStorage.getItem('copSantosClima')||'null'); if(c){ clima=c.c; climaT=c.t; } }catch(_){} }
-    if(!clima){ $('clima').innerHTML='<li><span class="ic"></span><span class="n2">Sem internet agora — a previsão volta quando tiver sinal.</span></li>'; return; }
+    if(s!==sentido) return;
+    try{ const c=JSON.parse(localStorage.getItem('copSantosClima_'+s)||'null'); if(c){ clima=c.c; climaT=c.t; climaSentido=s; } }catch(_){}
+    if(!clima||climaSentido!==s){ $('clima').innerHTML='<li><span class="ic"></span><span class="n2">Sem internet agora — a previsão volta quando tiver sinal.</span></li>'; return; }
   }
   renderClima();
 }
 
-/* ---------- AVISOS DO DIA (avisos.json no servidor — atualizo sem precisar reinstalar nada) ---------- */
+/* ---------- AVISOS DO DIA (avisos.json). Falados só com a voz liberada, 1x por dia, marcados ao TERMINAR ---------- */
+let ultimosAvisos=null, ultimosAvisosBruto=null, ultimosAvisosCache=false;
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function diaLocal(){ const d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
 function mostraAvisos(j, doCache){
-  if(!j || !j.itens || !j.itens.length){ $('avisos').hidden=true; return; }
+  ultimosAvisosBruto=j; ultimosAvisosCache=doCache;
+  const itens=(j&&j.itens||[]).filter(x=>!x.sentido || x.sentido===sentido);
+  if(!itens.length){ $('avisos').hidden=true; ultimosAvisos=null; return; }
+  const alerta=itens.find(x=>x.nivel==='alerta')||itens[0];
+  const aberto=$('avisos').open;
   $('avisos').hidden=false;
-  $('avisos').innerHTML='<div class="quando">Avisos da estrada · atualizado '+esc(j.atualizado||'')+(doCache?' · sem internet, versão salva':'')+'</div>'+
-    j.itens.map(x=>'<p><span class="b">'+(x.nivel==='alerta'?'⚠️':'ℹ️')+'</span><span>'+esc(x.texto)+'</span></p>').join('');
-  /* aviso falado só UMA vez por aparelho (não repete a cada abertura do app) */
-  let ditos={}; try{ ditos=JSON.parse(localStorage.getItem('copSantosAvisosDitos')||'{}'); }catch(e){}
-  j.itens.forEach(x=>{ const k=x.id+'|'+(x.fala||''); if(x.fala && x.id && !ditos[k] && !avisou['aviso:'+k]){ avisou['aviso:'+k]=1; ditos[k]=1; fala(x.fala); } });
-  try{ localStorage.setItem('copSantosAvisosDitos', JSON.stringify(ditos)); }catch(e){}
+  $('avisos').innerHTML='<summary><span>'+(alerta.nivel==='alerta'?'⚠️':'ℹ️')+'</span><span><span class="quando">Avisos da estrada · '+esc(j.atualizado||'')+(doCache?' · versão salva':'')+' · toque para ler ('+itens.length+')</span><br>'+esc(alerta.titulo||alerta.texto)+'</span></summary>'+
+    itens.map(x=>'<p><span>'+(x.nivel==='alerta'?'⚠️':'ℹ️')+'</span><span>'+esc(x.texto)+'</span></p>').join('');
+  $('avisos').open=aberto;
+  ultimosAvisos={...j, itens};
+  falaAvisos();
+}
+function falaAvisos(){
+  const j=ultimosAvisos; if(!j||!voz||!desbloqueado) return;
+  let ditos={}; try{ ditos=JSON.parse(localStorage.getItem('copSantosAvisosDitos2')||'{}'); }catch(e){}
+  j.itens.forEach(x=>{
+    if(!x.fala||!x.id) return;
+    const k=x.id+'|'+x.fala+'|'+diaLocal();
+    if(ditos[k] || avisou['aviso:'+k]) return;
+    avisou['aviso:'+k]=1;
+    const marca=()=>{ try{ const d=JSON.parse(localStorage.getItem('copSantosAvisosDitos2')||'{}'); d[k]=1; localStorage.setItem('copSantosAvisosDitos2', JSON.stringify(d)); }catch(e){} };
+    if(typeof VOZ!=='undefined' && !VOZ[hashTxt(x.fala)]){ fala(META_S.comum.avisoNovoFala,{extra:x.fala}); if(interagiu && navigator.vibrate) try{ navigator.vibrate([200,100,200]); }catch(e){} marca(); }
+    else fala(x.fala,{aoTerminar:marca});
+  });
 }
 async function atualizaAvisos(){
   try{
@@ -741,29 +853,29 @@ async function atualizaAvisos(){
     const off=r.headers.get('X-Copiloto-Offline')==='1';
     const j=await r.json(); if(!off){ try{ localStorage.setItem('copSantosAvisos', JSON.stringify(j)); }catch(e){} }
     mostraAvisos(j,off);
-  }catch(e){
-    try{ const c=JSON.parse(localStorage.getItem('copSantosAvisos')||'null'); if(c) mostraAvisos(c,true); }catch(_){}
-  }
+  }catch(e){ try{ const c=JSON.parse(localStorage.getItem('copSantosAvisos')||'null'); if(c) mostraAvisos(c,true); }catch(_){} }
 }
 
-/* ---------- SEM INTERNET: conferência do cache e download do mapa vetorial ao longo das 4 linhas ---------- */
+/* ---------- SEM INTERNET: app (URL por URL + autocura) e mapa vetorial ao longo das 16 linhas ---------- */
 const MAPA_CACHE='copiloto-santos-mapa-v2';
 function tilesDoCorredor(){
   const set=new Set();
   const lon2x=(lon,z)=>Math.floor((lon+180)/360*2**z);
   const lat2y=(lat,z)=>{ const s=Math.sin(lat*Math.PI/180); return Math.floor((0.5-Math.log((1+s)/(1-s))/(4*Math.PI))*2**z); };
-  for(let z=5; z<=14; z++){
-    const raio = (z===12 || z===13) ? 1 : 0;
-    for(const v of VARS){ const R=DADOS[v].R;
-      for(let i=0;i<R.length;i++){ const x=lon2x(R[i][1],z), y=lat2y(R[i][0],z);
-        for(let dx=-raio;dx<=raio;dx++) for(let dy=-raio;dy<=raio;dy++) set.add(z+'/'+(x+dx)+'/'+(y+dy)); } }
+  const add=(z,x,y,raio)=>{ for(let dx=-raio;dx<=raio;dx++) for(let dy=-raio;dy<=raio;dy++) set.add(z+'/'+(x+dx)+'/'+(y+dy)); };
+  for(const s of ['I','V']) for(const v of Object.keys(DADOS_S[s].linhas)){
+    const R=DADOS_S[s].linhas[v].R;
+    for(let i=0;i<R.length-1;i++){
+      const a=R[i], b=R[i+1]; const n=Math.max(1, Math.ceil((b[2]-a[2])/0.2));
+      for(let k=0;k<=n;k++){ const t=k/n; const lat=a[0]+t*(b[0]-a[0]), lon=a[1]+t*(b[1]-a[1]);
+        for(let z=4; z<=14; z++) add(z, lon2x(lon,z), lat2y(lat,z), z>=5?1:0); }
+    }
   }
   return [...set].map(k=>k.split('/').map(Number));
 }
 async function listaMapa(){
   const st=await (await fetch(ESTILO)).json();
-  const urls=[ESTILO];
-  const corr=tilesDoCorredor();
+  const urls=[ESTILO]; const corr=tilesDoCorredor();
   for(const s of Object.values(st.sources||{})){
     let tpl=null, minz=0, maxz=14;
     if(s.url){ urls.push(s.url); const tj=await (await fetch(s.url)).json(); tpl=tj.tiles&&tj.tiles[0]; minz=tj.minzoom||0; maxz=(tj.maxzoom!=null?tj.maxzoom:14); }
@@ -771,87 +883,105 @@ async function listaMapa(){
     if(!tpl) continue;
     corr.forEach(([z,x,y])=>{ if(z>=minz && z<=Math.min(maxz,14)) urls.push(tpl.replace('{z}',z).replace('{x}',x).replace('{y}',y)); });
   }
-  const sprites = Array.isArray(st.sprite) ? st.sprite.map(s=>s.url) : (st.sprite?[st.sprite]:[]);
+  const sprites=Array.isArray(st.sprite)?st.sprite.map(s=>s.url):(st.sprite?[st.sprite]:[]);
   sprites.forEach(b=>['.json','.png','@2x.json','@2x.png'].forEach(ext=>urls.push(b+ext)));
-  if(st.glyphs){
-    const fontes=new Set(); (st.layers||[]).forEach(l=>{ const f=l.layout&&l.layout['text-font']; if(Array.isArray(f)) fontes.add(f.join(',')); });
-    fontes.forEach(f=>['0-255','256-511','8192-8447'].forEach(r=>urls.push(st.glyphs.replace('{fontstack}', f.split(',').map(encodeURIComponent).join(',')).replace('{range}',r))));
-  }
+  if(st.glyphs){ const fontes=new Set(); (st.layers||[]).forEach(l=>{ const f=l.layout&&l.layout['text-font']; if(Array.isArray(f)) fontes.add(f.join(',')); });
+    fontes.forEach(f=>['0-255','256-511','8192-8447'].forEach(r=>urls.push(st.glyphs.replace('{fontstack}', f.split(',').map(encodeURIComponent).join(',')).replace('{range}',r)))); }
   return [...new Set(urls)];
 }
-async function confereOffline(){
+let baixando=false, reg=null, ultimoRepor=0, installFalhou=false, mapaOk=false;
+function lerListaMapa(){ try{ const L=JSON.parse(localStorage.getItem('copSantosMapaLista')||'null'); return (L && L.dados===META_S.comum.mapaVersao) ? L.urls : null; }catch(e){ return null; } }
+async function confereOffline(completo){
   try{
     if(!('caches' in window)){ $('offApp').textContent='navegador sem cache'; return; }
     const ks=await caches.keys();
-    const app=ks.find(k=>/^copiloto-santos-v-/.test(k));
-    if(!app){ $('offApp').textContent= location.protocol==='https:'||location.hostname==='localhost' ? 'salvando…' : 'só no link oficial'; }
-    else{
-      const n=(await (await caches.open(app)).keys()).length;
-      const esperado=(typeof PRE_TOTAL!=='undefined'? PRE_TOTAL : 0);
-      $('offApp').textContent = n>=esperado ? '✓ pronto' : ('salvando '+n+'/'+esperado);
+    const versao=(typeof VERSAO!=='undefined')?VERSAO:'';
+    const app=ks.find(k=>k===versao);
+    if(installFalhou){ $('offApp').textContent='FALHOU — toque aqui'; }
+    else if(!navigator.serviceWorker || !navigator.serviceWorker.controller){ $('offApp').textContent=(location.protocol==='https:'||location.hostname==='localhost') ? 'salvando…' : 'só no link oficial'; }
+    else if(!app){ $('offApp').textContent='atualizando…'; }
+    else {
+      const c=await caches.open(app); let faltam=0;
+      for(const u of (typeof PRE_LISTA!=='undefined'?PRE_LISTA:[])){ if(!(await c.match(u,{ignoreSearch:true}))) faltam++; }
+      if(!faltam) $('offApp').textContent='✓ pronto';
+      else { $('offApp').textContent='restaurando ('+faltam+' faltando)';
+        if(navigator.onLine && Date.now()-ultimoRepor>60000){ ultimoRepor=Date.now(); navigator.serviceWorker.controller.postMessage('repor'); } }
     }
-    let esperadoMapa=0; try{ esperadoMapa=+(localStorage.getItem('copSantosMapaTotal')||0); }catch(e){}
-    const mc=ks.includes(MAPA_CACHE)? (await (await caches.open(MAPA_CACHE)).keys()).length : 0;
-    if(!fundoVetorial){ $('offMapa').textContent='sem WebGL: mapa só online'; }
-    else if(!esperadoMapa || baixando){ if(!baixando) $('offMapa').textContent = 'não baixado'; }
-    else { const ok=mc>=esperadoMapa; $('offMapa').textContent = ok ? '✓ baixado' : 'incompleto ('+mc+' de '+esperadoMapa+')';
-      $('offBarra').style.width=Math.min(100,Math.round(mc/esperadoMapa*100))+'%'; if(ok) $('btnMapa').textContent='✓ Mapa da rota baixado'; }
+    if(!fundoVetorial){ $('offMapa').textContent='sem WebGL: mapa só online'; return; }
+    if(baixando) return;
+    const lista=lerListaMapa();
+    if(!lista){ $('offMapa').textContent='não baixado'; $('btnMapa').textContent='⬇️ Baixar mapa da rota (use Wi-Fi)'; $('offBarra').style.width='0'; return; }
+    if(!completo && mapaOk) return;
+    const mc=await caches.open(MAPA_CACHE); let tem=0;
+    for(const u of lista){ if(await mc.match(u,{ignoreVary:true})) tem++; }
+    $('offBarra').style.width=Math.round(tem/lista.length*100)+'%';
+    if(tem===lista.length){ $('offMapa').textContent='✓ baixado'; $('btnMapa').textContent='✓ Mapa da rota baixado'; mapaOk=true; }
+    else { $('offMapa').textContent='incompleto ('+(lista.length-tem)+' faltando)'; $('btnMapa').textContent='⬇️ Completar mapa ('+(lista.length-tem)+')'; mapaOk=false; }
   }catch(e){}
 }
-let baixando=false;
+$('offApp').onclick=()=>{ if(installFalhou && reg){ installFalhou=false; $('offApp').textContent='tentando…'; reg.update().catch(()=>{}); } };
 $('btnMapa').onclick=async()=>{
   if(baixando) return;
-  if(!fundoVetorial){ $('offMapa').textContent='este aparelho não tem WebGL: mapa só online'; return; }
+  if(!fundoVetorial){ $('offMapa').textContent='sem WebGL: mapa só online'; return; }
   if(!navigator.onLine){ $('offMapa').textContent='sem internet agora'; return; }
   baixando=true; $('btnMapa').textContent='Preparando…';
   let urls;
-  try{ urls=await listaMapa(); }
-  catch(e){ baixando=false; $('btnMapa').textContent='⬇️ Tentar de novo'; $('offMapa').textContent='não consegui ler o mapa agora'; return; }
-  try{ localStorage.setItem('copSantosMapaTotal', String(urls.length)); }catch(e){}
+  try{ urls=await listaMapa(); }catch(e){ baixando=false; $('btnMapa').textContent='⬇️ Tentar de novo'; $('offMapa').textContent='não consegui ler o mapa agora'; return; }
+  try{ localStorage.setItem('copSantosMapaLista', JSON.stringify({dados:META_S.comum.mapaVersao, urls})); }catch(e){}
   const c=await caches.open(MAPA_CACHE); let feitos=0, falhas=0, i=0;
   $('btnMapa').textContent='Baixando…';
   async function trabalhador(){
     while(i<urls.length){
       const u=urls[i++];
-      try{
-        if(await c.match(u,{ignoreVary:true})) feitos++;
-        else { const r=await fetch(u,{mode:'cors'}); if(r.ok){ if(!(await c.match(u,{ignoreVary:true}))) await c.put(u, r); feitos++; } else falhas++; }
-      }catch(e){ falhas++; }
+      try{ if(await c.match(u,{ignoreVary:true})) feitos++;
+        else { const ctl=new AbortController(); const t=setTimeout(()=>ctl.abort(),20000);
+          const r=await fetch(u,{mode:'cors',signal:ctl.signal}); clearTimeout(t);
+          if(r.ok){ if(!(await c.match(u,{ignoreVary:true}))) await c.put(u, r); feitos++; } else falhas++; } }
+      catch(e){ falhas++; }
       if((feitos+falhas)%20===0){ $('offMapa').textContent=feitos+' de '+urls.length; $('offBarra').style.width=Math.round((feitos+falhas)/urls.length*100)+'%'; }
     }
   }
   await Promise.all([1,2,3,4,5,6].map(trabalhador));
-  baixando=false;
-  $('btnMapa').textContent= falhas ? '⬇️ Tentar de novo ('+falhas+' falharam)' : '✓ Mapa da rota baixado';
-  confereOffline();
+  baixando=false; mapaOk=false;
+  await confereOffline(true);
+  if(falhas) $('btnMapa').textContent='⬇️ Tentar de novo ('+falhas+' falharam)';
 };
 
 /* ---------- início ---------- */
 $('btnVoz').textContent='Voz: '+(voz?'ligada':'desligada'); $('btnVoz').classList.toggle('on',voz);
-marcaSeg();
-$('titulo').textContent=META.titulo;
-$('planoTit').textContent=META.planoTitulo; $('plano').innerHTML=META.plano;
-$('versao').textContent='Dados gerados em '+META.gerado+' · rota real (OSRM/OpenStreetMap) conferida com o Google Maps · '+(typeof VOZ_LISTA!=='undefined'?VOZ_LISTA.length:0)+' avisos com voz gravada.';
-$('stFalta').textContent=Math.round(CFG().TOTAL);
+aplicaSentido();
+$('versao').textContent='Versão '+((typeof VERSAO!=='undefined')?VERSAO.replace('copiloto-santos-v-',''):'?')+' · dados de '+META_S.comum.gerado+' · rota real (OSRM/OpenStreetMap) conferida com o Google Maps.';
+if(IOS && !INSTALADO && location.protocol==='https:') $('bannerIos').hidden=false;
 desenhaRota(); desenhaPontos();
 if(map){ try{ map.fitBounds(L.latLngBounds(linhaPts()),{padding:[30,30]}); }catch(e){} }
 render();
 startGps();
+mostraBannerVoz();
 atualizaClima(); setInterval(()=>{ if(document.visibilityState==='visible') atualizaClima(); }, 20*60000);
 setInterval(()=>{ if(clima) renderClima(); }, 60000);
 atualizaAvisos(); setInterval(()=>{ if(document.visibilityState==='visible') atualizaAvisos(); }, 10*60000);
-window.addEventListener('online',()=>{ atualizaAvisos(); atualizaClima(); });
+window.addEventListener('online',()=>{ atualizaAvisos(); atualizaClima(); confereOffline(true); });
 
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   const tinhaSW = !!navigator.serviceWorker.controller;
   let recarregou = false;
   navigator.serviceWorker.addEventListener('controllerchange', function(){
     if (!tinhaSW || recarregou) return;
-    recarregou = true; location.reload();
+    recarregou = true;
+    /* em uso (alguém tocou ou já está na rota): NÃO recarrega sozinho — a voz travaria no iPhone */
+    if (interagiu || jaNaRota) { $('bannerNova').hidden = false; return; }
+    location.reload();
   });
-  navigator.serviceWorker.register('sw.js').then(()=>setTimeout(confereOffline,2500)).catch(function(){ $('offApp').textContent='não foi possível salvar'; });
+  $('bannerNova').onclick = () => location.reload();
+  navigator.serviceWorker.register('sw.js').then(r=>{
+    reg=r;
+    const vigiaInstall=w=>{ if(!w) return; w.addEventListener('statechange',()=>{ if(w.state==='redundant' && !navigator.serviceWorker.controller){ installFalhou=true; confereOffline(); } }); };
+    vigiaInstall(r.installing);
+    r.addEventListener('updatefound',()=>vigiaInstall(r.installing));
+    setTimeout(()=>confereOffline(true),2500);
+  }).catch(()=>{ installFalhou=true; confereOffline(); });
   try{ navigator.storage && navigator.storage.persist && navigator.storage.persist(); }catch(e){}
-  setInterval(confereOffline, 15000);
+  setInterval(()=>confereOffline(false), 15000);
 } else { $('offApp').textContent='abra pelo link oficial (https)'; }
 </script>
 </body>
