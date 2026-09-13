@@ -1,0 +1,9 @@
+{
+ "atualizado": "13/09 às 18h",
+ "itens": [
+  {"id":"chuva1409","nivel":"alerta","texto":"INMET: alerta LARANJA de chuva intensa na segunda (14/09) em toda a rota, do Rio a Santos. Até 150 mm previstos na Baixada Santista. Farol baixo aceso, distância dobrada e sem pressa.","fala":"Aviso do dia: alerta laranja de chuva intensa em toda a rota. Farol baixo aceso, distância dobrada, e sem pressa."},
+  {"id":"araras1409","nivel":"info","texto":"Serra das Araras: a pista sentido SP fecha das 13h às 15h para detonação. Saindo às 6h, vocês passam por lá por volta das 8h, antes do bloqueio."},
+  {"id":"ecovias1409","nivel":"info","texto":"Imigrantes/Anchieta: sem bloqueio programado na serra durante o dia; pode haver faixa fechada para manutenção entre 8h e 17h. Com neblina forte, a descida pode ser em comboio."},
+  {"id":"rodizio","nivel":"info","texto":"Pelo Rodoanel não há rodízio. Se o Waze mandar por dentro de São Paulo antes das 10h, placa com final 1 ou 2 leva multa."}
+ ]
+}
