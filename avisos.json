@@ -1,5 +1,5 @@
 {
- "atualizado": "14/09 às 03h45",
+ "atualizado": "14/09 às 04h10",
  "itens": [
   {
    "id": "chuva1409",
@@ -32,6 +32,19 @@
    "nivel": "info",
    "titulo": "Sem Parar: conferir antes de sair",
    "texto": "Antes de sair, no app Sem Parar: tag ativa e ABASTECIMENTO habilitado para a placa do carro (Usar Abastece → Habilitar veículos), e o limite disponível. Pedágio: pista automática, até 40 km/h; se a cancela não abrir, não deem ré, liguem o pisca-alerta e esperem o atendente. Free flow da Dutra: com a tag é automático. Posto: só nas bombas com a placa do Sem Parar, avisando o frentista, e só para combustível. Na ida aceitam: Graal Estrela, Graal 3 Garças, Frango Assado Taubaté, Frango Assado Carvalho Pinto, 4R Shell (6h às 22h) e B.G. da Ayrton Senna. Não aceitam: Graal Resende e Frango Assado Aparecida. Na Dutra do lado do Rio quase não há posto com Sem Parar. Levem cartão e dinheiro de reserva."
+  },
+  {
+   "id": "volta2109",
+   "sentido": "V",
+   "nivel": "info",
+   "titulo": "Volta de segunda 21/09: metade da viagem no escuro",
+   "texto": "Saindo às 14h, o sol se põe por volta das 17h50 perto de Aparecida. Itatiaia, a descida da Serra das Araras (~20h) e a Dutra no RJ serão à noite: farol baixo, distância dobrada e, na descida, marcha reduzida com freio motor. Parem para jantar e abastecer antes de escurecer (Graal Clube dos 500, km 60, aceita Sem Parar). A RioSP ainda não publicou o calendário de detonações da Serra das Araras para a semana de 21/09 (a descida, pista sentido Rio, costuma não ser afetada); a Ecovias também não publicou os bloqueios da serra para 21 a 27/09 (normalmente começam às 23h30). Abram o app com internet no dia: os avisos se atualizam sozinhos."
+  },
+  {
+   "id": "ponte2109",
+   "sentido": "V",
+   "nivel": "info",
+   "texto": "Ponte Rio–Niterói: o pedágio (R$ 6,60) fica no fim da Ponte, já em Niterói, e é cobrado só neste sentido. Pista automática do Sem Parar. Depois, sigam as placas São Gonçalo / Av. do Contorno."
   }
  ]
 }
