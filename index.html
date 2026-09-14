@@ -93,6 +93,13 @@
   .seg button.sel{background:#22301F; color:var(--ink)}
   .seg.sentido button.sel{background:#1F3A2A}
   .segnote{font-size:.72rem; color:var(--dim); margin:-2px 2px 0; line-height:1.4}
+  #autoStat{font-size:.8rem; color:var(--ink); background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:9px 12px; margin:0}
+  details.forcar{border:1px dashed var(--line); border-radius:12px; padding:0 10px}
+  details.forcar summary{cursor:pointer; font-size:.74rem; color:var(--dim); padding:8px 0; list-style:none}
+  details.forcar summary::-webkit-details-marker{display:none}
+  details.forcar[open] summary{padding-bottom:10px}
+  details.forcar .seg{margin-bottom:8px}
+  details.forcar #dims{margin-bottom:10px}
   h2{font-size:.66rem; letter-spacing:.15em; text-transform:uppercase; color:var(--dim); margin:6px 2px 0; font-weight:600}
   ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px}
   li{background:var(--panel); border:1px solid var(--line); border-radius:11px; padding:8px 12px 8px 10px;
@@ -170,15 +177,18 @@
     <button id="btnVoz" class="on">Voz: ligada</button>
   </div>
 
-  <div class="seg sentido" role="group" aria-label="Sentido da viagem">
-    <button id="segIda">Ida · para Santos</button>
-    <button id="segVolta">Volta · para São Gonçalo</button>
-  </div>
-  <div id="dims" style="display:grid; gap:8px"></div>
-  <p class="segnote">Sigam o Waze: o app percebe sozinho o sentido e por onde vocês foram.</p>
+  <p class="segnote" id="autoStat">🧭 Automático: sigam o Waze. O app descobre sozinho o sentido e por onde vocês foram, e avisa por voz. Não precisa marcar nada.</p>
+  <details class="forcar">
+    <summary>⚙️ Forçar sentido ou linha à mão (normalmente não precisa)</summary>
+    <div class="seg sentido" role="group" aria-label="Sentido da viagem">
+      <button id="segIda">Ida · para Santos</button>
+      <button id="segVolta">Volta · para São Gonçalo</button>
+    </div>
+    <div id="dims" style="display:grid; gap:8px"></div>
+  </details>
 
   <div class="row">
-    <button id="btnSkip">Já passei ✓</button>
+    <button id="btnSkip" title="Só se o GPS falhar: o app avança sozinho">Pular ponto (só sem GPS)</button>
     <button id="btnUndo" hidden>↩ Desfazer</button>
     <button id="btnTest">Testar voz</button>
   </div>
@@ -246,7 +256,7 @@ const zonas=()=>CFG().Z;
 let voz=true, pulados=new Set(), desfeitos=[], avisou={}, watchId=null, ultima=null, wake=null;
 let segue=true, zoomManual=false, hist=[], rumo=0, velKmh=0, boaPrecisao=false, lastFixAt=0, tUltimoBom=0;
 let gpsQuerido=true, retryTimer=null, jaDeuZoom=false, interagiu=false;
-let foraDaRota=false, jaNaRota=false, chegou=false;
+let foraDaRota=false, jaNaRota=false, chegou=false, ultimaTroca=null;
 let mediaKmh=0, kmViagem=0, amostras=[];
 let nRap=0, ultRap=null, rejeitados=0, desdeAproximado=0;
 const ativos=()=>pts().filter(p=>!pulados.has(p.n));
@@ -521,7 +531,15 @@ try{ const S=JSON.parse(localStorage.getItem('copSantos2')||'{}'); if(S.voz===fa
 function salva(){ try{ localStorage.setItem('copSantos2', JSON.stringify({voz})); }catch(e){} }
 function restauraLinhaAuto(){
   try{ const A=JSON.parse(localStorage.getItem('copSantosLinhaAuto')||'null');
-    if(A && A.s===sentido && DADOS[A.v] && Date.now()-(A.t||0) < 10*3600000) rotaVar=A.v; }catch(e){}
+    if(A && A.s===sentido && DADOS[A.v] && Date.now()-(A.t||0) < 10*3600000){ rotaVar=A.v; ultimaTroca={auto:true, t:A.t, rest:true}; } }catch(e){}
+}
+/* estado da detecção automática, sempre visível abaixo dos botões */
+function estadoAuto(){
+  const el=$('autoStat'); if(!el) return;
+  const nome=nomeLinha(rotaVar);
+  if(!ultimaTroca) el.textContent='🧭 Automático: sigam o Waze. Até a primeira bifurcação vale a linha padrão ('+nome+'); o app descobre sozinho por onde vocês foram e avisa por voz. Os botões só servem para forçar.';
+  else if(ultimaTroca.auto) el.textContent='🧭 Automático: '+(ultimaTroca.rest?'linha restaurada da detecção anterior':'detectei às '+hhmm(new Date(ultimaTroca.t)))+' — '+nome+'. Se mudarem de caminho, troco de novo sozinho.';
+  else el.textContent='✋ Forçado por vocês: '+nome+'. Se o GPS mostrar outro caminho, o app troca sozinho mesmo assim.';
 }
 
 /* ---------- GPS ---------- */
@@ -720,11 +738,12 @@ function marcaDims(){
   const a=CFG().attrs;
   $('dims').querySelectorAll('button').forEach(b=>b.classList.toggle('sel', a[b.dataset.dim]===b.dataset.v));
   $('segIda').classList.toggle('sel',sentido==='I'); $('segVolta').classList.toggle('sel',sentido==='V');
+  estadoAuto();
 }
 function trocaRota(r, auto, calado){
   if(rotaVar===r || !DADOS[r]) return;
   const antes=DADOS[rotaVar].attrs;
-  rotaVar=r; amostras=[]; mediaKmh=0; foraDaRota=false; nRap=0; ultRap=null;
+  rotaVar=r; amostras=[]; mediaKmh=0; foraDaRota=false; nRap=0; ultRap=null; ultimaTroca={auto:!!auto, t:Date.now()};
   if(ultima) kmViagem=projEm(CFG().R, ultima.lat, ultima.lon).km;
   if(ultima && jaNaRota) silenciaAtras();
   marcaDims(); desenhaRota(); desenhaPontos();
@@ -747,7 +766,7 @@ function aplicaSentido(){
 }
 function trocaSentido(s, auto){
   if(sentido===s) return;
-  sentido=s; aplicaSentido();
+  sentido=s; ultimaTroca=null; aplicaSentido();
   jaNaRota=false; foraDaRota=false; chegou=false; kmViagem=0; pulados.clear(); desfeitos=[]; $('btnUndo').hidden=true;
   Object.keys(avisou).forEach(k=>{ if(!k.startsWith('aviso:')) delete avisou[k]; });
   amostras=[]; mediaKmh=0; hist=[]; nRap=0; ultRap=null; tUltimoBom=0;
