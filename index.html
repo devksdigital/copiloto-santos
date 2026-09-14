@@ -451,7 +451,7 @@ function modosVoz(pt){
   const dez = pt.t==='toll'||pt.t==='ff'||pt.t==='fuel'||pt.t==='warn';
   return {dez, tres:true, perto:true};
 }
-function frase10(pt){ return 'A dez quilômetros: '+(pt.f||pt.n)+(pt.t==='toll'?'. Separem o pagamento.':''); }
+function frase10(pt){ return 'A dez quilômetros: '+(pt.f||pt.n)+(pt.t==='toll'?'. Pista do Sem Parar.':''); }
 function frase3(pt){ return 'Em 3 quilômetros: '+(pt.f||pt.n); }
 function fraseChegando(pt){ return 'Chegando: '+(pt.fc||pt.f||pt.n); }
 
