@@ -64,6 +64,8 @@
   .mctrl button.on{border-color:var(--toll); color:var(--toll)}
   .vel{position:absolute; left:8px; top:8px; z-index:800; background:rgba(11,15,12,.88); border:1px solid var(--line);
     border-radius:10px; padding:6px 11px; font-size:1.05rem; font-weight:800; text-align:center; min-width:58px}
+  .radar{position:absolute; left:8px; top:74px; z-index:800; background:rgba(150,20,20,.94); border:1px solid #e55; border-radius:12px; padding:5px 10px; color:#fff; font-weight:800; font-size:1.05rem; line-height:1.1; text-align:center}
+  .radar small{display:block; font-size:.58rem; letter-spacing:.08em; font-weight:700; color:#fdd}
   .vel small{font-size:.62rem; font-weight:600; color:var(--dim); display:block; letter-spacing:.1em}
   .carro{filter:drop-shadow(0 1px 3px rgba(0,0,0,.6))}
   .legenda{display:grid; grid-template-columns:repeat(3,1fr); gap:6px 8px; padding:7px 10px; background:rgba(11,15,12,.92);
@@ -145,11 +147,13 @@
   <div class="banner verde" id="bannerNova" hidden>🔄 <b>Versão nova pronta.</b> Toque aqui com o carro PARADO (depois toque de novo para ligar a voz).</div>
   <div class="banner verm" id="bannerGps" hidden></div>
   <div class="banner amar" id="bannerIos" hidden>📱 <b>iPhone:</b> toque em Compartilhar → <b>Adicionar à Tela de Início</b> e use o app pelo ícone. O que for baixado aqui no Safari não vale no ícone.</div>
+  <div class="banner amar" id="bannerTroca" hidden>🔄 <b>Hora de trocar o motorista.</b> <span id="trocaTxt"></span> <u>Toque para fechar.</u></div>
   <div class="banner amar" id="bannerTela" hidden>🔆 A tela pode apagar sozinha. Durante a viagem deixem o bloqueio automático da tela em <b>Nunca</b> e a economia de bateria desligada.</div>
 
   <div class="mapbox">
     <div id="map"></div>
     <div class="vel" id="vel" hidden><span id="velN">--</span><small>KM/H</small></div>
+    <div class="radar" id="radarBox" hidden>📸 <span id="radarLim">--</span><small>RADAR À FRENTE</small></div>
     <div class="mctrl">
       <button id="zin" aria-label="Aproximar">+</button>
       <button id="zout" aria-label="Afastar">−</button>
@@ -647,10 +651,37 @@ function novoFix(p){
     if(amostras.length>1){ const a0=amostras[0], a1=amostras[amostras.length-1]; const dt=(a1.t-a0.t)/3600000; if(dt>0.02) mediaKmh=Math.max(0,(a1.km-a0.km)/dt); }
     atualizaStats();
     zonas().forEach(z=>{ if(kmViagem>=z.de && kmViagem<z.ate && !avisou['zona:'+z.id]){ avisou['zona:'+z.id]=1; fala(z.msg,{extra:fraseClima(z.clima)}); } });
+    radares(); trocaMotorista();
     if(!chegou && kmViagem>=CFG().TOTAL-0.25){ chegou=true; fala(META.chegadaFala); }
   }
   if(primeiraBoa && !jaDeuZoom && segue && !zoomManual && map){ jaDeuZoom=true; map.setView([lat,lon],14); }
   render();
+}
+/* RADARES (OpenStreetMap, só os da pista deste sentido): voz ~600 m antes, com o limite quando conhecido */
+function fraseRadar(lim, rapido){ return 'Radar à frente.'+(lim?' Limite de '+lim+'.':'')+(rapido&&lim?' Reduzam.':''); }
+let radarAte=0;
+function radares(){
+  const agora=Date.now();
+  if(radarAte && agora>radarAte){ $('radarBox').hidden=true; radarAte=0; }
+  const R=CFG().RAD||[]; if(!R.length || !boaPrecisao) return;
+  for(const r of R){ const km=r[0], lim=r[1], dr=km-kmViagem;
+    if(dr<0.05 || dr>0.65) continue;
+    const k='rad:'+km.toFixed(2); if(avisou[k]) continue; avisou[k]=1;
+    fala(fraseRadar(lim, !!lim && velKmh>lim+7), {curta:true});
+    $('radarLim').textContent=lim?lim:'?'; $('radarBox').hidden=false;
+    radarAte=agora+Math.max(15000, dr/Math.max(velKmh,30)*3600000+6000);
+    break; }
+}
+/* TROCA DE MOTORISTA: na metade do km total do sentido (quadro + voz), 1x por dia */
+const FRASE_TROCA='Metade da viagem. Hora de trocar o motorista. Parem num posto ou num lugar seguro.';
+function trocaMotorista(){
+  const T=CFG().TOTAL; if(chegou || !T || kmViagem<T/2 || kmViagem>T-40) return;
+  const k='troca:'+sentido+':'+diaLocal(); if(avisou[k]) return; avisou[k]=1;
+  try{ if(localStorage.getItem('copiloto-'+k)) return; localStorage.setItem('copiloto-'+k,'1'); }catch(e){}
+  const pz=pts().filter(p=>p.t==='fuel' && p.km>kmViagem-0.3)[0];
+  $('trocaTxt').textContent='Metade dos '+Math.round(T)+' km da viagem. Parem num posto ou lugar seguro, nunca no acostamento'+(pz?'. Próximo posto: '+pz.n.replace(/^[^·]*·\s*/,'')+', a '+Math.max(0,Math.round(pz.km-kmViagem))+' km.':'.');
+  $('bannerTroca').hidden=false;
+  fala(FRASE_TROCA);
 }
 function atualizaStats(){
   $('stRod').textContent=Math.round(kmViagem);
@@ -992,6 +1023,7 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
     location.reload();
   });
   $('bannerNova').onclick = () => location.reload();
+  $('bannerTroca').onclick = () => { $('bannerTroca').hidden = true; };
   navigator.serviceWorker.register('sw.js').then(r=>{
     reg=r;
     const vigiaInstall=w=>{ if(!w) return; w.addEventListener('statechange',()=>{ if(w.state==='redundant' && !navigator.serviceWorker.controller){ installFalhou=true; confereOffline(); } }); };
