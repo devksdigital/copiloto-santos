@@ -1,44 +1,45 @@
 {
- "atualizado": "14/09 às 05h",
+ "atualizado": "21/09 às 21h40",
  "itens": [
   {
-   "id": "chuva1409",
-   "sentido": "I",
+   "id": "tempo2209",
+   "sentido": "V",
    "nivel": "alerta",
-   "titulo": "Alerta laranja de chuva intensa na rota toda (segunda 14/09)",
-   "texto": "INMET, conferido às 3h de hoje: alerta LARANJA de chuva intensa o dia todo, do Rio a Santos (até 100 mm no dia, com rajadas fortes). Agora de madrugada a chuva mais forte está no lado do Rio (Niterói, Linha Vermelha, Baixada Fluminense), com pancadas e raios previstos. A Defesa Civil de SP fala em até 150 mm na Baixada Santista somando domingo e segunda; Santos está com o solo encharcado e em atenção, e a chuva piora à tarde. Farol baixo aceso, distância dobrada e sem pressa. Com chuva muito forte, esperem num posto ou base da concessionária, nunca no acostamento. Rua alagada: não atravessem.",
-   "fala": "Aviso do dia: alerta laranja de chuva intensa em toda a rota. Farol baixo aceso, distância dobrada, e sem pressa."
+   "titulo": "Terça 22/09: alerta de tempestade; o pior é à tarde",
+   "texto": "INMET: alerta LARANJA de tempestade para terça (22/09) o dia todo, de Santos ao Rio (até 60 mm por hora, rajadas de 60 a 100 km/h, granizo). Pela previsão, a madrugada e a manhã ficam sem chuva forte e a chuva começa por volta das 13h na serra e das 14h em Niterói, e os temporais vêm à tarde: saindo às 4h30, vocês chegam antes. Atenção a três coisas: neblina possível no alto da serra por volta das 5h (ainda escuro), com rajadas de até 60 km/h lá em cima; névoa no Vale do Paraíba ao amanhecer; e vento forte no Rio a manhã toda (na Ponte, segurem firme o volante). Farol baixo aceso, distância dobrada e sem pressa; com chuva muito forte, esperem num posto, nunca no acostamento.",
+   "fala": "Aviso do dia: alerta de tempestade para terça, mais forte à tarde. Pode ter neblina na serra de madrugada. Farol aceso, e distância dobrada."
   },
   {
-   "id": "araras1409",
-   "sentido": "I",
+   "id": "serra2209",
+   "sentido": "V",
    "nivel": "info",
-   "texto": "Serra das Araras: a RioSP fecha a pista sentido SP no km 225 das 13h às 15h para detonação (pode mudar com o tempo). Saindo às 6h, vocês passam por lá por volta das 8h. No alto da serra, perto do km 233, a pista fica com 2 faixas e limite de 40 km/h por causa das obras: sigam em frente pela BR-116."
+   "titulo": "Subida da serra: vão pela Imigrantes",
+   "texto": "A Ecovias fecha de 21 a 24/09, a partir das 23h30, a pista de descida da Anchieta na serra, e a descida passa a usar a pista de subida da Anchieta; enquanto isso, a subida é só pela Imigrantes. Saindo às 4h30, subam pela Imigrantes. Subindo não se paga pedágio (o pedágio eletrônico da serra segue adiado). Com neblina forte, a Ecovias pode fazer comboio. Ecovias: 0800 019 7878."
   },
   {
-   "id": "ecovias1409",
-   "sentido": "I",
-   "nivel": "info",
-   "texto": "Serra do Mar, conferido às 3h: Imigrantes e Anchieta normais, sem comboio. Hoje não há bloqueio programado das descidas durante o dia; pode haver faixa fechada para manutenção entre 8h e 17h. A Interligação Planalto (ligação entre Imigrantes e Anchieta lá em cima) está fechada por neblina: desçam direto pela rodovia em que entrarem saindo do Rodoanel. Neblina forte no alto da serra de manhã cedo, com tendência de melhora perto do meio-dia. Ecovias: 0800 019 7878."
+   "id": "dutra2209",
+   "sentido": "V",
+   "nivel": "alerta",
+   "titulo": "Dutra no RJ em obras: pode ter comboio e desvio",
+   "texto": "Logo depois da descida da Serra das Araras (km 225 a 214, antes do pedágio de Viúva Graça), a RioSP faz tapa-buraco na pista sentido Rio nesta terça, com possível comboio (horário não divulgado). Depois, de Seropédica até Nova Iguaçu (km 214 a 169), a Ecovias Rio Minas faz recapeamento nesta semana, com pare e siga, faixa fechada e até interdição total durante o dia em alguns dias. Se o Google mandar sair da Dutra (por exemplo, pelo Arco Metropolitano), sigam o Google: o app avisa que saiu da rota mapeada e volta a guiar sozinho na Linha Vermelha. O app avisa por voz ao chegar nesse trecho."
   },
   {
-   "id": "obras1409",
-   "sentido": "I",
+   "id": "obrasSP2209",
+   "sentido": "V",
    "nivel": "info",
-   "texto": "Obras com faixa fechada hoje: Carvalho Pinto entre Taubaté e Guararema, bloqueios alternados de faixa das 6h às 18h; entroncamento Ayrton Senna x Rodoanel (Itaquaquecetuba), bloqueio parcial de faixas das 8h às 17h; e fim da Via Anchieta em Santos (km 64,9), obra que fecha 2 faixas e o acostamento. Pode haver afunilamento nesses pontos."
+   "texto": "Obras em SP com faixa fechada: Carvalho Pinto entre Guararema e Taubaté, bloqueios alternados de faixa das 6h às 18h (vocês passam por volta das 6h30); Ayrton Senna (km 11 a 60), faixas fechadas em pontos. Rodoanel sem bloqueio programado. O rodízio de SP não afeta: vocês passam antes das 7h e pelo Rodoanel."
+  },
+  {
+   "id": "araras2209",
+   "sentido": "V",
+   "nivel": "info",
+   "texto": "Serra das Araras: as detonações desta semana são só na pista de subida (sentido SP), das 13h às 15h; a descida para o Rio funciona normal. Vocês descem por volta das 10h30: marcha reduzida e freio motor."
   },
   {
    "id": "semparar",
    "nivel": "info",
-   "titulo": "Sem Parar: conferir antes de sair",
-   "texto": "Antes de sair, no app Sem Parar: tag ativa e ABASTECIMENTO habilitado para a placa do carro (Usar Abastece → Habilitar veículos), e o limite disponível. Pedágio: pista automática, até 40 km/h; se a cancela não abrir, não deem ré, liguem o pisca-alerta e esperem o atendente. Free flow da Dutra: com a tag é automático. Posto: só nas bombas com a placa do Sem Parar, avisando o frentista, e só para combustível. Na ida aceitam: Graal Estrela, Graal 3 Garças, Frango Assado Taubaté, Frango Assado Carvalho Pinto, 4R Shell (6h às 22h) e B.G. da Ayrton Senna. Não aceitam: Graal Resende e Frango Assado Aparecida. Na Dutra do lado do Rio quase não há posto com Sem Parar. Levem cartão e dinheiro de reserva."
-  },
-  {
-   "id": "volta2109",
-   "sentido": "V",
-   "nivel": "info",
-   "titulo": "Volta de segunda 21/09: metade da viagem no escuro",
-   "texto": "Saindo às 14h, o sol se põe por volta das 17h50 perto de Aparecida. Itatiaia, a descida da Serra das Araras (~20h) e a Dutra no RJ serão à noite: farol baixo, distância dobrada e, na descida, marcha reduzida com freio motor. Parem para jantar e abastecer antes de escurecer (Graal Clube dos 500, km 60, aceita Sem Parar). A RioSP ainda não publicou o calendário de detonações da Serra das Araras para a semana de 21/09 (a descida, pista sentido Rio, costuma não ser afetada); a Ecovias também não publicou os bloqueios da serra para 21 a 27/09 (normalmente começam às 23h30). A Ecovias adiou o pedágio eletrônico da serra sem data nova: se estrear antes do dia 21, a subida custa R$ 20,30 pela tag. Abram o app com internet no dia: os avisos se atualizam sozinhos."
+   "titulo": "Sem Parar na volta",
+   "texto": "Pedágio: pista automática em todas as praças, até 40 km/h; se a cancela não abrir, não deem ré: pisca-alerta e esperem o atendente. Postos com Sem Parar na volta: Frango Assado Carvalho Pinto (km 94), Sol da Dutra (Carvalho Pinto km 124), Frango Assado Jacareí (Dutra km 165) e Guararema (km 179), Graal Pinda (km 95), Graal Clube dos 500 (km 60) e Graal Alemão (Queluz, km 12). Na Dutra do lado do Rio não há posto com Sem Parar até Nova Iguaçu: completem o tanque antes da divisa. Levem cartão e dinheiro de reserva."
   },
   {
    "id": "ponte2109",
